@@ -39,16 +39,13 @@ class OLMoClient:
 
         # Load model and tokenizer
         print(f"Loading OLMo model: {self.model_name} on {self.device}")
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_name, local_files_only=True
-        )
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
         if self.device == "cuda":
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
                 dtype=torch.float16,
                 device_map="auto",
-                local_files_only=True,
             )
         else:
             # CPU/MPS: load in float32 (native CPU dtype, no upcasting needed).
@@ -56,7 +53,6 @@ class OLMoClient:
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
                 dtype=torch.float32,
-                local_files_only=True,
             )
             self.device = "cpu"
     
@@ -135,7 +131,7 @@ class OLMoClient:
 First, create a brief headline (under 10 words), then provide a 2-3 sentence summary.
 
 Text to summarize:
-{text[:4000]}  # Truncate if too long
+{text[:4000]}
 
 Format your response as:
 HEADLINE: [your headline here]
