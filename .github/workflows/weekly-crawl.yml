@@ -21,11 +21,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up conda environment
-        uses: conda-incubator/setup-miniconda@v3
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
-          activate-environment: learn_connect
-          auto-activate-base: false
+          environment-name: learn_connect
+          cache-environment: true  # uses actions/cache@v4 internally
 
       # Cache the OLMo model (~6 GB) so we don't re-download every week
       - name: Cache HuggingFace models
@@ -33,7 +33,6 @@ jobs:
         with:
           path: ~/.cache/huggingface/hub
           key: huggingface-olmo-2-0425-1b-instruct
-          # No restore-keys: we want an exact cache hit or a fresh download
 
       - name: Create .env file from secrets
         run: |
@@ -48,20 +47,20 @@ jobs:
           EOF
 
       - name: Run database migrations
-        shell: bash -el {0}
+        shell: micromamba-shell {0}
         run: python manage.py migrate --run-syncdb
 
       - name: Crawl Legistar calendar
-        shell: bash -el {0}
+        shell: micromamba-shell {0}
         run: |
           python manage.py legistar crawl-calendar --customer seattle
 
       - name: Run summarization pipeline
-        shell: bash -el {0}
+        shell: micromamba-shell {0}
         run: python setup_summaries.py
 
       - name: Build static site
-        shell: bash -el {0}
+        shell: micromamba-shell {0}
         run: python manage.py distill-local --force
 
       - name: Commit updated database to main
