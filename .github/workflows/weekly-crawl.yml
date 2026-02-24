@@ -1,0 +1,82 @@
+name: Weekly Legistar Crawl
+
+on:
+  schedule:
+    # Tuesdays at 1:30 AM Pacific (9:30 AM UTC)
+    - cron: '30 9 * * 2'
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+jobs:
+  crawl-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to commit db.sqlite3 back to main
+      pages: write     # needed to deploy to GitHub Pages
+      id-token: write  # needed for Pages OIDC auth
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up conda environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment.yml
+          activate-environment: learn_connect
+          auto-activate-base: false
+
+      # Cache the OLMo model (~6 GB) so we don't re-download every week
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: huggingface-olmo-2-0425-1b-instruct
+          # No restore-keys: we want an exact cache hit or a fresh download
+
+      - name: Create .env file from secrets
+        run: |
+          cat > .env <<EOF
+          DEBUG=NO
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          OLMO_MODEL_NAME=allenai/OLMo-2-0425-1B-Instruct
+          OLMO_DEVICE=cpu
+          OLMO_MAX_LENGTH=2048
+          CRAWL_INTERVAL_DAYS=7
+          CRAWL_TIME=01:30
+          EOF
+
+      - name: Run database migrations
+        shell: bash -el {0}
+        run: python manage.py migrate --run-syncdb
+
+      - name: Crawl Legistar calendar
+        shell: bash -el {0}
+        run: |
+          python manage.py legistar crawl-calendar --customer seattle
+
+      - name: Run summarization pipeline
+        shell: bash -el {0}
+        run: python setup_summaries.py
+
+      - name: Build static site
+        shell: bash -el {0}
+        run: python manage.py distill-local --force
+
+      - name: Commit updated database to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/db.sqlite3
+          git diff --staged --quiet || git commit -m \
+            "chore: weekly data update $(date +'%Y-%m-%d')"
+          git push
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
