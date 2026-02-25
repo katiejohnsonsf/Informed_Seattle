@@ -49,6 +49,7 @@ docx2txt = "^0.8"
 transformers = "^4.36.0"  # For loading OLMo models
 torch = "^2.1.0"  # PyTorch for inference
 accelerate = "^0.25.0"  # For efficient model loading
+python-dotenv = "^1.0.0"  # For loading .env files
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
