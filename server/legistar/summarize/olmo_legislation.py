@@ -329,6 +329,10 @@ def summarize_council_bill_structured(
         )
 
     except Exception as e:
+        import traceback
+
+        print(f"  ERROR in Council Bill summarization: {e}")
+        traceback.print_exc()
         return SummarizationError(
             original_text=title,
             message=f"Council Bill summarization failed: {str(e)}",
@@ -377,6 +381,10 @@ Provide a comprehensive summary that explains what this legislation does."""
             chunk_summaries=(body,),
         )
     except Exception as e:
+        import traceback
+
+        print(f"  ERROR in legislation summarization: {e}")
+        traceback.print_exc()
         return SummarizationError(
             original_text=title,
             message=f"Legislation summarization failed: {str(e)}",
