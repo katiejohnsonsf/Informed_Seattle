@@ -42,8 +42,22 @@ function listenForKeyboardEvents(event) {
 }
 
 
+// Intro panel chevron: smooth-scroll to the bills section on click.
+document.addEventListener("DOMContentLoaded", function () {
+  var chevron = document.getElementById("intro-chevron");
+  if (chevron) {
+    chevron.addEventListener("click", function () {
+      var target = document.getElementById("main-content");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  }
+});
+
+
 // When the document is ready, make sure the summarization style is selected
-// correctly, and set up the event handler for when it changes. Use basic 
+// correctly, and set up the event handler for when it changes. Use basic
 // javascript; no jQuery.
 document.addEventListener("DOMContentLoaded", function () {
   // get the current filter from the URL. It will be the final path component

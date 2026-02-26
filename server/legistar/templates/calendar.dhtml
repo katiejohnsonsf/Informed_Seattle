@@ -1,5 +1,60 @@
 {% extends "base.dhtml" %}
 {% block page_title %}Seattle City Council Bills{% if date_range_start and date_range_end %}: {{ date_range_start|date:"M j" }} - {{ date_range_end|date:"M j, Y" }}{% endif %}{% endblock page_title %}
+
+{% block main %}
+  <section class="intro-panel" id="intro-panel">
+    <div class="intro-page">
+
+      <div class="intro-label-row">
+        <span class="intro-label-tag">Statement of Intent</span>
+        <div class="intro-label-line"></div>
+        <span class="intro-label-date">Seattle &middot; 2026</span>
+      </div>
+
+      <div class="intro-columns">
+
+        <div class="intro-col">
+          <span class="intro-section-marker">The Problem</span>
+          <h2 class="intro-head">City Hall hears from <em>interests.</em><br>It should hear from <em>residents.</em></h2>
+          <p class="intro-body">Public comment at Seattle City Council was designed to be the voice of the people &mdash; but in practice, it most often belongs to those who already know how power works: lobbyists, organized interests, and insiders fluent in legislative language. Most residents never see the bills that shape their rents, their streets, and their safety &mdash; let alone in time to respond.</p>
+          <p class="intro-body">This is not a failure of interest. It is a <strong>failure of information infrastructure.</strong> When residents cannot easily understand what is being decided on their behalf, they cannot organize around it, speak to it, or push back on it. The public realm &mdash; the space where ordinary people shape the city they live in &mdash; quietly closes.</p>
+          <blockquote class="intro-evidence-block">
+            <p>When participants are given accessible, balanced policy information, their confidence, engagement, and willingness to take civic action increase significantly. Across more than 100 deliberative polls in 28 countries, the finding is consistent: informed residents do not disengage. They show up.</p>
+            <cite>&mdash; James Fishkin, Center for Deliberative Democracy, Stanford University</cite>
+          </blockquote>
+        </div>
+
+        <div class="intro-col-divider" aria-hidden="true"></div>
+
+        <div class="intro-col">
+          <span class="intro-section-marker">The Purpose</span>
+          <h2 class="intro-head">To make every resident<br>a <em>reader</em> of the law &mdash;<br>and its <em>author.</em></h2>
+          <p class="intro-body">Mayor Katie Wilson&rsquo;s inauguration pledge was direct: organize, build power outside City Hall, and she will make room at the table. That promise can only be kept if residents can see, in plain language, what City Hall is doing week by week &mdash; which bills are moving, what they would change, and when their voice can still make a difference.</p>
+          <p class="intro-body">This tool translates Seattle City Council legislation into accessible weekly summaries &mdash; not to tell residents what to think, but to give them what they need to think for themselves, find each other across neighborhoods, and arrive at City Hall as <strong>organized, informed participants</strong> rather than spectators.</p>
+          <div class="intro-arendt-block">
+            <p class="intro-arendt-quote">To be political, to live in a polis, means that everything is decided through words and persuasion and not through force &mdash; and to be both the subject and author of its laws is the highest form of human freedom.</p>
+            <span class="intro-arendt-attr">&mdash; Hannah Arendt, The Human Condition</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="intro-footer-row">
+        <div class="intro-footer-text">Seattle Legislative Plain-Text Translator</div>
+        <div class="intro-footer-line"></div>
+        <div class="intro-footer-text">Civic Infrastructure &middot; 2026</div>
+      </div>
+
+    </div>
+
+    <button class="intro-chevron" id="intro-chevron" aria-label="Scroll to bills">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+  </section>
+  {{ block.super }}
+{% endblock main %}
 {% block title %}
   <section class="title">
     <h1 class="big-title">
