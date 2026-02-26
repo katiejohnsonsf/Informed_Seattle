@@ -111,6 +111,16 @@ def _extract_district_votes(legislation) -> tuple[list[dict], list[dict]]:
     return district_votes, at_large_votes
 
 
+def _extract_full_council_vote_date(legislation):
+    """Return the date of the Full Council vote for this legislation, or None."""
+    for row in legislation.crawl_data.rows:
+        if row.result and any(
+            body in (row.action_by or "").lower() for body in _FULL_COUNCIL_BODIES
+        ):
+            return row.date
+    return None
+
+
 def _council_bill_status(legislation) -> tuple[str, str]:
     """Return (display_label, tooltip_text) for a council bill's legislative status."""
     raw = (legislation.status or "").strip()
@@ -341,6 +351,9 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
     district_votes, at_large_votes = (
         _extract_district_votes(legislation) if is_council_bill else ([], [])
     )
+    vote_date = (
+        _extract_full_council_vote_date(legislation) if is_council_bill else None
+    )
 
     return {
         "legistar_id": legislation.legistar_id,
@@ -356,6 +369,7 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         "bill_status_tooltip": bill_status_tooltip,
         "district_votes_json": json.dumps(district_votes),
         "at_large_votes": at_large_votes,
+        "vote_date": vote_date,
         "document_table_contexts": [
             _document_table_context(document, style)
             for document in legislation.documents.all()

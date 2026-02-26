@@ -115,7 +115,7 @@
             <a href="{{ entry.legislation.url }}" target="_blank">{{ entry.legislation.headline }}</a>
           </h1>
           <p class="bill-meta">{{ entry.legislation.kind }} {{ entry.legislation.title }}</p>
-          <time>Council Meeting Vote occurred on {{ entry.day_of_week }}, {{ entry.meeting_date|date:"F j, Y" }}</time>
+          {% if entry.legislation.vote_date %}<time>Council vote: {{ entry.legislation.vote_date|date:"l, F j, Y" }}</time>{% endif %}
           <p class="bill-committee">{{ entry.committee }}</p>
         </div>
 
