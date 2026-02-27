@@ -163,12 +163,12 @@ def _text_to_html_paragraphs(text: str):
     return format_html_join("\n", "<p>{}</p>", ((s,) for s in splits if s))
 
 
-_STRUCTURED_SECTION_HEADERS = {
-    "WHAT WAS ORIGINALLY PROPOSED": "Clear 2-3 sentence summary",
-    "AMENDMENTS AND VOTES": "Council member vote breakdown",
-    "WHAT THE FINAL TEXT DOES": "3-4 sentence summary",
-    "WHAT CHANGED FROM THE ORIGINAL": "Differences from the original proposal",
-}
+_STRUCTURED_SECTION_HEADERS = frozenset({
+    "WHAT WAS ORIGINALLY PROPOSED",
+    "AMENDMENTS AND VOTES",
+    "WHAT THE FINAL TEXT DOES",
+    "WHAT CHANGED FROM THE ORIGINAL",
+})
 
 
 def _structured_summary_to_html(text: str):
@@ -181,13 +181,8 @@ def _structured_summary_to_html(text: str):
         if not line:
             continue
         if line in _STRUCTURED_SECTION_HEADERS:
-            desc = _STRUCTURED_SECTION_HEADERS[line]
             html_parts.append(
-                format_html(
-                    '<h2 style="font-weight:700">{} <small style="font-weight:normal;color:#666">({})</small></h2>',  # noqa: E501
-                    line.title(),
-                    desc,
-                )
+                format_html('<h2 style="font-weight:700">{}</h2>', line.title())
             )
         else:
             html_parts.append(format_html("<p>{}</p>", line))
