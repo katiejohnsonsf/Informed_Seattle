@@ -3,7 +3,7 @@
   <link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet">
   <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
 {% endblock extra_head %}
-{% block page_title %}Informed Seattle / Council Bills{% if date_range_start and date_range_end %}: {{ date_range_start|date:"M j" }} - {{ date_range_end|date:"M j, Y" }}{% endif %}{% endblock page_title %}
+{% block page_title %}Informed Seattle{% if date_range_start and date_range_end %}: {{ date_range_start|date:"M j" }} - {{ date_range_end|date:"M j, Y" }}{% endif %}{% endblock page_title %}
 
 {% block main %}
   <section class="intro-panel" id="intro-panel">
@@ -61,8 +61,9 @@
 {% endblock main %}
 {% block title %}
   <section class="title">
+    <p class="title-eyebrow">Proof of Concept for Expanded Information Infrastructure</p>
     <h1 class="big-title">
-      Informed Seattle / Council Bills{% if date_range_start and date_range_end %}<br>
+      Informed Seattle{% if date_range_start and date_range_end %}<br>
       <span style="font-size: 0.65em; font-weight: 600;">{{ date_range_start|date:"M j" }} &ndash; {{ date_range_end|date:"M j, Y" }}</span>
       {% endif %}
     </h1>

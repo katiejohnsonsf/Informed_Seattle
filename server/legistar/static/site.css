@@ -393,6 +393,15 @@ a.view-link:hover {
   border-bottom: 1px solid #DDD;
 }
 
+.title-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 0.35rem;
+}
+
 .title h1 {
   font-size: 2.25rem;
   line-height: 2.5rem;
