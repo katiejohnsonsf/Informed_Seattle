@@ -1,7 +1,17 @@
 {% extends "base.dhtml" %}
+{% load static %}
 {% block extra_head %}
   <link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet">
   <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+  <style>
+    .intro-panel,
+    section.title {
+      background-image: url("{% static 'seattle-skyline.jpg' %}");
+      background-size: cover;
+      background-position: center 35%;
+      background-attachment: fixed;
+    }
+  </style>
 {% endblock extra_head %}
 {% block page_title %}Informed Seattle{% if date_range_start and date_range_end %}: {{ date_range_start|date:"M j" }} - {{ date_range_end|date:"M j, Y" }}{% endif %}{% endblock page_title %}
 

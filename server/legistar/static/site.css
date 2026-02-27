@@ -169,7 +169,7 @@ main {
   width: 87.5%;
   max-width: 720px;
   margin: 0 auto;
-  padding-top: 4rem;
+  padding-top: 0;
   padding-bottom: 4rem;
 }
 
@@ -388,9 +388,11 @@ a.view-link:hover {
 
 /** Title section. */
 .title {
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #DDD;
+  position: relative;
+  padding: 2rem 2rem 1.75rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: rgba(10, 18, 35, 0.42); /* dark scrim over photo */
 }
 
 .title-eyebrow {
@@ -398,7 +400,7 @@ a.view-link:hover {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 0.35rem;
 }
 
@@ -406,7 +408,7 @@ a.view-link:hover {
   font-size: 2.25rem;
   line-height: 2.5rem;
   font-weight: 900;
-  color: #3730A3;
+  color: #ffffff;
 }
 
 .title .data-source {
@@ -468,6 +470,11 @@ a.view-link:hover {
 .bill-entry {
   padding: 1.5rem 0;
   border-bottom: 1px solid #ddd;
+  background: #fff;
+}
+
+.bill-entry:first-child {
+  padding-top: 2rem;
 }
 
 h4.action-type {
@@ -888,7 +895,7 @@ h4.action-type {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #faf8f4;
+  background-color: #b8c9d4; /* fallback if image doesn't load */
   padding: 2rem 1.5rem 5rem;
   box-sizing: border-box;
 }
@@ -1129,7 +1136,7 @@ h4.action-type {
   background: none;
   border: none;
   cursor: pointer;
-  color: #8b1a1a;
+  color: #ffffff;
   padding: 0.4rem;
   display: flex;
   flex-direction: column;
@@ -1137,12 +1144,12 @@ h4.action-type {
   justify-content: center;
   gap: 0.3rem;
   animation: intro-chevron-bounce 2.2s ease-in-out infinite;
-  transition: color 0.2s ease;
-  opacity: 0.75;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.85;
 }
 
 .intro-chevron:hover {
-  color: #5a0f0f;
+  color: #ffffff;
   opacity: 1;
 }
 
