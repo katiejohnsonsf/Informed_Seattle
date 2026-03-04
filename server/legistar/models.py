@@ -413,6 +413,11 @@ class Legislation(models.Model):
         default=dict,
         help_text="Persisted council vote breakdown: {action_details: [{action_by, action}]}",
     )
+    has_amendment_docs = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="True if any supporting document title contains 'amendment'.",
+    )
 
     documents = models.ManyToManyField(
         Document,
@@ -606,6 +611,89 @@ class LegislationSummary(SummaryBaseModel):
                 name="unique_legislation_summary_for_style",
             ),
         ]
+
+
+class AmendmentSummary(models.Model):
+    """
+    Structured summary of an amendment supporting document for a Council Bill.
+
+    Populated by the `generate-amendment-summaries` management command, which:
+    - Detects supporting documents whose title contains 'amendment'
+    - Extracts sponsors, effect statement, and amendment number from the PDF
+    - Generates two LLM summaries (normative and technical)
+    - Records votes, or infers "pass as amended" from the bill's final vote
+    """
+
+    legislation = models.ForeignKey(
+        Legislation,
+        on_delete=models.CASCADE,
+        related_name="amendment_summaries",
+        help_text="The council bill this amendment belongs to.",
+    )
+    document = models.ForeignKey(
+        Document,
+        on_delete=models.CASCADE,
+        related_name="amendment_summaries",
+        help_text="The supporting document that is the amendment.",
+    )
+    amendment_number = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Parsed amendment identifier, e.g. 'A', '1', '2'.",
+    )
+    short_title = models.TextField(
+        blank=True,
+        help_text="Brief descriptive title extracted from the amendment text.",
+    )
+    sponsors = models.JSONField(
+        default=list,
+        help_text="List of sponsor/author names, e.g. [{\"name\": \"Councilmember Rivera\"}].",
+    )
+    effect_statement = models.TextField(
+        blank=True,
+        help_text="Effect Statement extracted from the amendment, attributed to sponsor(s).",
+    )
+    normative_summary = models.TextField(
+        blank=True,
+        help_text="LLM summary embracing the normative/policy language of the amendment.",
+    )
+    technical_changes = models.TextField(
+        blank=True,
+        help_text="LLM-generated bulleted list of technical/instrumental changes.",
+    )
+    votes_json = models.JSONField(
+        default=dict,
+        help_text=(
+            "Vote records for this amendment: "
+            "{rows: [{name, vote, district, in_favor, opposed, absent}]}. "
+            "Empty if no vote data is available."
+        ),
+    )
+    pass_as_amended = models.BooleanField(
+        default=False,
+        help_text=(
+            "True when no separate amendment vote was recorded; votes_json is "
+            "populated from the bill's final passage vote, each member labeled "
+            "'Pass as Amended'."
+        ),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Amendment summary"
+        verbose_name_plural = "Amendment summaries"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["legislation", "document"],
+                name="unique_amendment_summary_for_legislation_document",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"Amendment {self.amendment_number or '?'} "
+            f"for {self.legislation.record_no}"
+        )
 
 
 class CrawlMetadata(models.Model):
