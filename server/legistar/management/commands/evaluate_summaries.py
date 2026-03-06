@@ -19,7 +19,6 @@ Claude scores six rubric dimensions on completeness (1-5) and faithfulness (1-5)
 Results are stored in a SummaryEvaluation record (one per LegislationSummary).
 """
 
-import json
 import re
 import sys
 
@@ -54,7 +53,8 @@ RUBRIC_DESCRIPTIONS = {
     ),
     "amendment_accuracy": (
         "Are amendments described accurately? Is the vote breakdown per council "
-        "member correct and complete? Are any amendments or votes omitted or mischaracterized?"
+        "member correct and complete? Are any amendments or votes omitted or "
+        "mischaracterized?"
     ),
     "accessibility": (
         "Is the language plain enough for a non-lawyer Seattle resident? "
@@ -82,11 +82,17 @@ _TOOL_DEFINITION = {
                 "properties": {
                     "completeness": {
                         "type": "integer",
-                        "description": "Score 1-5: how complete is this dimension (nothing omitted)?",
+                        "description": (
+                            "Score 1-5: how complete is this dimension "
+                            "(nothing omitted)?"
+                        ),
                     },
                     "faithfulness": {
                         "type": "integer",
-                        "description": "Score 1-5: how faithful is this dimension (no hallucination)?",
+                        "description": (
+                            "Score 1-5: how faithful is this dimension "
+                            "(no hallucination)?"
+                        ),
                     },
                     "reasoning": {
                         "type": "string",
@@ -207,7 +213,8 @@ def _process_summary(legislation_summary, force: bool, client, model: str) -> No
 
     if not summary_body or summary_body == "(SUMMARIZATION FAILED)":
         print(
-            f"  [skip] No valid summary for: {legislation_summary.legislation.record_no}",
+            f"  [skip] No valid summary for: "
+            f"{legislation_summary.legislation.record_no}",
             file=sys.stderr,
         )
         return

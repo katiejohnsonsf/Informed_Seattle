@@ -707,15 +707,10 @@ class SummaryEvaluation(models.Model):
     the source bill text and OLMo summary to Claude and asks it to score
     each rubric dimension on completeness (1-5) and faithfulness (1-5).
 
-    scores JSON shape:
-    {
-      "headline_accuracy":        {"completeness": int, "faithfulness": int, "reasoning": str},
-      "proposed_intent_fidelity": {"completeness": int, "faithfulness": int, "reasoning": str},
-      "final_text_fidelity":      {"completeness": int, "faithfulness": int, "reasoning": str},
-      "amendment_accuracy":       {"completeness": int, "faithfulness": int, "reasoning": str},
-      "accessibility":            {"completeness": int, "faithfulness": int, "reasoning": str},
-      "neutrality":               {"completeness": int, "faithfulness": int, "reasoning": str},
-    }
+    scores JSON shape (per dimension):
+      {completeness: int, faithfulness: int, reasoning: str}
+    dimensions: headline_accuracy, proposed_intent_fidelity, final_text_fidelity,
+      amendment_accuracy, accessibility, neutrality
     """
 
     legislation_summary = models.OneToOneField(
