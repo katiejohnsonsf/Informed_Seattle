@@ -168,6 +168,92 @@
      class="more-link space secondary"
      target="_blank">Visit calendar on legistar &rarr;</a>
 
+  {% if previous_bill_entries %}
+  <section class="previous-legislation">
+    <h2 class="previous-legislation-heading">Previous Legislation</h2>
+
+    {% for entry in previous_bill_entries %}
+      <article class="bill-entry">
+        <h4 class="action-type">
+          {{ entry.legislation.kind }}
+          {% if entry.is_council_bill and entry.legislation.bill_status_label %}
+            <span class="bill-status">
+              {{ entry.legislation.bill_status_label }}
+              <span class="bill-status-info" aria-label="Status information">
+                <svg class="bill-status-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
+                </svg>
+                <span class="bill-status-tooltip">{{ entry.legislation.bill_status_tooltip }}</span>
+              </span>
+            </span>
+          {% endif %}
+        </h4>
+
+        {% if entry.is_informational %}
+          <details class="bill-accordion">
+            <summary>
+              <span class="accordion-title">{{ entry.legislation.headline }}</span>
+            </summary>
+            <div class="accordion-body">
+              <p class="bill-meta">{{ entry.legislation.kind }} {{ entry.legislation.title }}</p>
+              <time>Council Meeting Vote occurred on {{ entry.day_of_week }}, {{ entry.meeting_date|date:"F j, Y" }}</time>
+              <p class="bill-committee">{{ entry.committee }}</p>
+              <div class="content">
+                {{ entry.legislation.summary | safe }}
+              </div>
+            </div>
+          </details>
+        {% else %}
+          <div class="header">
+            <h1>
+              <a href="{{ entry.legislation.url }}" target="_blank">{{ entry.legislation.headline }}</a>
+            </h1>
+            <p class="bill-meta">{{ entry.legislation.kind }} {{ entry.legislation.title }}</p>
+            <time class="bill-action-date"><span class="bill-action-date-label">Date of Council Action:</span> {% if entry.legislation.vote_date %}{{ entry.legislation.vote_date|date:"F j, Y" }}{% else %}{{ entry.meeting_date|date:"F j, Y" }}{% endif %}</time>
+          </div>
+
+          <div class="vote-map-section">
+            <h3 class="vote-map-title">Amendments &amp; Votes</h3>
+
+            <div class="bill-vote-map">
+              <div class="bill-map-canvas"
+                   data-votes="{{ entry.legislation.district_votes_json }}"
+                   aria-label="Seattle council district vote map"></div>
+            </div>
+
+            {% if entry.legislation.amendments %}
+              <table class="amendment-table">
+                <thead>
+                  <tr>
+                    <th>Member / Body</th>
+                    <th>Amendment</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for amendment in entry.legislation.amendments %}
+                    <tr>
+                      <td>{{ amendment.action_by }}</td>
+                      <td class="amendment-text">{{ amendment.action }}</td>
+                      <td class="amendment-date">{{ amendment.date|date:"M j, Y" }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% elif entry.legislation.vote_date %}
+              <p class="no-amendments">This council bill had no amendments.</p>
+            {% endif %}
+          </div>
+
+          <div class="content">
+            {{ entry.legislation.summary | safe }}
+          </div>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </section>
+  {% endif %}
+
   {% if next_crawl_at %}
   <section class="next-update">
     <p>Check back {{ next_crawl_at|date:"F j, Y" }} for your Seattle Legislative Update!</p>

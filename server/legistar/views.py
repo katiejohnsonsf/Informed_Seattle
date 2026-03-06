@@ -585,6 +585,39 @@ def calendar(request, style: str):
     # Sort by meeting date descending (newest first)
     bill_entries.sort(key=lambda e: e["meeting_date"], reverse=True)
 
+    # Build previous legislation: council bills from meetings before the cutoff
+    previous_bill_entries = []
+    seen_legislation = {pk for (pk, _) in seen}
+    older_meetings = (
+        Meeting.manager.active().filter(date__lt=cutoff_date).order_by("-date")
+    )
+    for meeting in older_meetings:
+        for legislation in meeting.legislations:
+            if legislation.pk in seen_legislation:
+                continue
+            seen_legislation.add(legislation.pk)
+            if _COUNCIL_BILL_KIND not in legislation.kind:
+                continue
+            if not LegislationSummary.objects.filter(
+                legislation=legislation, style=style
+            ).exists():
+                continue
+            leg_context = _legislation_context(legislation, style)
+            kind = leg_context["kind"]
+            leg_context["summary"] = leg_context["summary"].replace("*", "")
+            previous_bill_entries.append(
+                {
+                    "legislation": leg_context,
+                    "meeting_date": meeting.date,
+                    "day_of_week": meeting.date.strftime("%A"),
+                    "committee": meeting.crawl_data.department.name,
+                    "meeting_id": meeting.legistar_id,
+                    "is_council_bill": _COUNCIL_BILL_KIND in kind,
+                    "is_informational": kind == "Informational",
+                }
+            )
+    previous_bill_entries.sort(key=lambda e: e["meeting_date"], reverse=True)
+
     # Crawl metadata
     crawl_meta = CrawlMetadata.get_instance()
     last_crawl_at = crawl_meta.last_crawl_at if crawl_meta else None
@@ -624,6 +657,7 @@ def calendar(request, style: str):
         {
             "style": style,
             "bill_entries": bill_entries,
+            "previous_bill_entries": previous_bill_entries,
             "date_range_start": date_range_start,
             "date_range_end": date_range_end,
             "data_source_date": last_crawl_at or datetime.date.today(),
