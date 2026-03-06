@@ -839,6 +839,14 @@ h4.action-type {
 .vp-absent { background: #f3f4f6; color: #4b5563; }
 .vp-upcoming { background: #eff6ff; color: #1d4ed8; }
 
+.vp-amendment {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #374151;
+  font-style: italic;
+  max-width: 200px;
+}
+
 
 /* ---- Vote status labels (below map) ---- */
 

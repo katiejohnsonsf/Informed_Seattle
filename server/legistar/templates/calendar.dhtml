@@ -128,6 +128,7 @@
           <div class="bill-vote-map">
             <div class="bill-map-canvas"
                  data-votes="{{ entry.legislation.district_votes_json }}"
+                 data-amendments="{{ entry.legislation.amendments_json }}"
                  aria-label="Seattle council district vote map"></div>
           </div>
 
@@ -150,13 +151,17 @@
                 {% endfor %}
               </tbody>
             </table>
-          {% elif entry.legislation.vote_date %}
-            <p class="no-amendments">This council bill had no amendments.</p>
           {% endif %}
         </div>
 
+        {% if entry.legislation.summary_what_changed %}
         <div class="content">
-          {{ entry.legislation.summary | safe }}
+          {{ entry.legislation.summary_what_changed | safe }}
+        </div>
+        {% endif %}
+
+        <div class="content">
+          {{ entry.legislation.summary_without_what_changed | safe }}
         </div>
       {% endif %}
     </article>
@@ -235,6 +240,7 @@
             <div class="bill-vote-map">
               <div class="bill-map-canvas"
                    data-votes="{{ entry.legislation.district_votes_json }}"
+                   data-amendments="{{ entry.legislation.amendments_json }}"
                    aria-label="Seattle council district vote map"></div>
             </div>
 
@@ -257,13 +263,17 @@
                   {% endfor %}
                 </tbody>
               </table>
-            {% elif entry.legislation.vote_date %}
-              <p class="no-amendments">This council bill had no amendments.</p>
             {% endif %}
           </div>
 
+          {% if entry.legislation.summary_what_changed %}
           <div class="content">
-            {{ entry.legislation.summary | safe }}
+            {{ entry.legislation.summary_what_changed | safe }}
+          </div>
+          {% endif %}
+
+          <div class="content">
+            {{ entry.legislation.summary_without_what_changed | safe }}
           </div>
         {% endif %}
       </article>

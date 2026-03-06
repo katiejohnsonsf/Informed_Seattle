@@ -255,6 +255,41 @@ def _structured_summary_to_html(text: str):
     return "\n".join(html_parts)
 
 
+def _split_structured_summary(text: str) -> tuple[str, str]:
+    """Split a structured summary into (what_changed_html, main_html).
+
+    what_changed_html: just the WHAT CHANGED FROM THE ORIGINAL section.
+    main_html: all other sections except AMENDMENTS AND VOTES and WHAT CHANGED.
+    """
+    from django.utils.html import format_html
+
+    _WHAT_CHANGED = "WHAT CHANGED FROM THE ORIGINAL"
+    lines = [s.strip() for s in text.split("\n")]
+    what_changed_parts: list[str] = []
+    main_parts: list[str] = []
+    current_section: str | None = None
+
+    for line in lines:
+        if not line:
+            continue
+        if line in _STRUCTURED_SECTION_HEADERS:
+            current_section = line
+            if line == _WHAT_CHANGED:
+                what_changed_parts.append(
+                    format_html('<h2 style="font-weight:700">{}</h2>', line.title())
+                )
+            elif line not in _SKIP_SECTIONS:
+                main_parts.append(
+                    format_html('<h2 style="font-weight:700">{}</h2>', line.title())
+                )
+        elif current_section == _WHAT_CHANGED:
+            what_changed_parts.append(format_html("<p>{}</p>", line))
+        elif current_section not in _SKIP_SECTIONS:
+            main_parts.append(format_html("<p>{}</p>", line))
+
+    return "\n".join(what_changed_parts), "\n".join(main_parts)
+
+
 def _remove_surrounding_quotes(text: str):
     """Remove quotes and other annoying characters in a given text."""
     # Usually, we use this with the headline for a summary; for whatever reason,
@@ -400,10 +435,16 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
     body = summary.body if summary else "This summary is being generated."
 
     # Use structured rendering for Council Bill summaries with section headers
-    if summary and "WHAT WAS ORIGINALLY PROPOSED" in body:
+    is_structured = summary and "WHAT WAS ORIGINALLY PROPOSED" in body
+    if is_structured:
         rendered_summary = _structured_summary_to_html(body)
+        what_changed_html, summary_without_what_changed = _split_structured_summary(
+            body
+        )
     else:
         rendered_summary = _text_to_html_paragraphs(body)
+        what_changed_html = ""
+        summary_without_what_changed = rendered_summary
 
     is_council_bill = _COUNCIL_BILL_KIND in legislation.type
     bill_status_label, bill_status_tooltip = (
@@ -416,6 +457,12 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         _extract_full_council_vote_date(legislation) if is_council_bill else None
     )
     amendments = _extract_amendments(legislation) if is_council_bill else []
+    amendments_json = json.dumps(
+        [
+            {**a, "date": a["date"].isoformat() if a.get("date") else None}
+            for a in amendments
+        ]
+    )
 
     return {
         "legistar_id": legislation.legistar_id,
@@ -427,6 +474,8 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         "headline": headline,
         "summary_pending": summary is None,
         "summary": rendered_summary,
+        "summary_what_changed": what_changed_html,
+        "summary_without_what_changed": summary_without_what_changed,
         "bill_status_label": bill_status_label,
         "bill_status_tooltip": bill_status_tooltip,
         "district_votes": district_votes,
@@ -434,6 +483,7 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         "at_large_votes": at_large_votes,
         "vote_date": vote_date,
         "amendments": amendments,
+        "amendments_json": amendments_json,
         "document_table_contexts": [
             _document_table_context(document, style)
             for document in legislation.documents.all()

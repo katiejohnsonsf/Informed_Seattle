@@ -93,19 +93,23 @@ function computeBounds(geojson) {
   return [[w, s], [e, n]];
 }
 
-function enrichGeoJSON(geojson, byDistrict) {
+function enrichGeoJSON(geojson, byDistrict, amendmentsByLastName) {
   return {
     type: "FeatureCollection",
     features: geojson.features.map(function (f) {
       var d = f.properties.district;
       var v = byDistrict[d];
       var vtype = v ? (v.in_favor ? "yes" : v.opposed ? "no" : v.absent ? "absent" : "unknown") : "unknown";
+      var memberName = (v && v.name) ? v.name : (DISTRICT_MEMBERS[d] || "");
+      var memberLastName = memberName.split(/\s+/).pop().toLowerCase();
+      var amendmentText = (amendmentsByLastName && amendmentsByLastName[memberLastName]) || "";
       return Object.assign({}, f, {
         id: d,
         properties: Object.assign({}, f.properties, {
           member_name: v ? v.name : "",
           vote_text: v ? v.vote : "",
           vote_type: vtype,
+          amendment_text: amendmentText,
         }),
       });
     }),
@@ -122,7 +126,18 @@ function initBillMap(canvas, baseGeoJSON) {
     votes.forEach(function (v) { if (typeof v.district === "number") byDistrict[v.district] = v; });
   }
 
-  var geojson = enrichGeoJSON(baseGeoJSON, byDistrict);
+  var amendments;
+  try { amendments = JSON.parse(canvas.dataset.amendments || "[]"); } catch (e) { amendments = []; }
+  var amendmentsByLastName = {};
+  (amendments || []).forEach(function (a) {
+    (a.action_by || "").split(/,\s*/).forEach(function (name) {
+      var parts = name.trim().split(/\s+/);
+      var lastName = parts[parts.length - 1].toLowerCase();
+      if (lastName) amendmentsByLastName[lastName] = a.action;
+    });
+  });
+
+  var geojson = enrichGeoJSON(baseGeoJSON, byDistrict, amendmentsByLastName);
   var bounds  = computeBounds(geojson);
 
   var map = new maplibregl.Map({
@@ -211,7 +226,8 @@ function initBillMap(canvas, baseGeoJSON) {
           '<div class="vp-district">District ' + p.district + "</div>" +
           (p.member_name
             ? '<div class="vp-name">'  + p.member_name + "</div>" +
-              '<div class="vp-vote ' + cls + '">' + (p.vote_text || "Unknown") + "</div>"
+              '<div class="vp-vote ' + cls + '">' + (p.vote_text || "Unknown") + "</div>" +
+              (p.amendment_text ? '<div class="vp-amendment">Sponsored: ' + p.amendment_text + "</div>" : "")
             : '<div class="vp-vote vp-absent">No data</div>')
         ).addTo(map);
       });
@@ -239,7 +255,8 @@ function initBillMap(canvas, baseGeoJSON) {
         popup.setLngLat(ev.lngLat).setHTML(
           '<div class="vp-district">District ' + p.district + "</div>" +
           (memberName ? '<div class="vp-name">' + memberName + "</div>" : "") +
-          '<div class="vp-vote vp-upcoming">Vote upcoming</div>'
+          '<div class="vp-vote vp-upcoming">Vote upcoming</div>' +
+          (p.amendment_text ? '<div class="vp-amendment">Sponsored: ' + p.amendment_text + "</div>" : "")
         ).addTo(map);
       });
 
