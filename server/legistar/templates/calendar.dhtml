@@ -78,6 +78,7 @@
       {% endif %}
     </h1>
     <p class="title-tagline">Learn<span class="tagline-dot">&bull;</span>Connect<span class="tagline-dot">&bull;</span>Engage</p>
+    <p class="title-eval-link"><a href="{% url 'legistar:evaluations' %}">See Summary Evaluations &rarr;</a></p>
   </section>
 {% endblock title %}
 {% block content %}

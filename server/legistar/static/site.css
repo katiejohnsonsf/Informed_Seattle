@@ -1217,3 +1217,245 @@ h4.action-type {
     font-size: 1.35rem;
   }
 }
+
+
+/* ============================================================
+   Summary Evaluations page
+   ============================================================ */
+
+/* Link in calendar title section */
+.title-eval-link {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.title-eval-link a {
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.title-eval-link a:hover {
+  text-decoration: underline;
+}
+
+/* Legend block */
+.eval-legend {
+  margin: 2rem 0 2.5rem;
+  padding: 1.25rem 1.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.eval-legend-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.eval-legend-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1.25rem;
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.eval-legend-grid dt {
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+.eval-legend-grid dd {
+  color: #4b5563;
+  margin: 0;
+}
+
+.eval-legend-note {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Table layout */
+.eval-table {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.eval-table-header,
+.eval-row-summary {
+  display: grid;
+  grid-template-columns: 7rem 1fr 8rem 8rem 2rem;
+  align-items: center;
+  gap: 0 1rem;
+  padding: 0.55rem 0.75rem;
+}
+
+.eval-table-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Expandable row */
+.eval-row {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.eval-row-summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.9rem;
+  color: #111827;
+  transition: background 0.1s;
+}
+
+.eval-row-summary::-webkit-details-marker {
+  display: none;
+}
+
+.eval-row-summary:hover {
+  background: #f9fafb;
+}
+
+.eval-col-cb {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.eval-col-headline {
+  line-height: 1.35;
+}
+
+.eval-col-score {
+  text-align: center;
+}
+
+.eval-col-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.eval-chevron-icon {
+  transition: transform 0.2s ease;
+}
+
+.eval-row[open] .eval-chevron-icon {
+  transform: rotate(180deg);
+}
+
+/* Score badges */
+.eval-score-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.eval-score-high {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.eval-score-mid {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.eval-score-low {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.eval-score-pending {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+/* Expanded body */
+.eval-row-body {
+  padding: 0.75rem 0.75rem 1.25rem 0.75rem;
+  background: #fafafa;
+}
+
+/* Per-dimension inner table */
+.eval-dim-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.eval-dim-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 0.3rem 0.6rem 0.3rem 0;
+}
+
+.eval-dim-table td {
+  vertical-align: top;
+  padding: 0.45rem 0.6rem 0.45rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+}
+
+.eval-dim-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.eval-dim-score {
+  text-align: center;
+  font-weight: 700;
+  color: #1f2937;
+  width: 8rem;
+}
+
+.eval-dim-reasoning {
+  color: #4b5563;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+/* Empty state */
+.eval-empty {
+  margin: 3rem 0;
+  text-align: center;
+  color: #6b7280;
+}
+
+.eval-empty p {
+  margin: 0.5rem 0;
+}
+
+.eval-empty-hint {
+  font-size: 0.85rem;
+}
+
+.eval-empty code {
+  background: #f3f4f6;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  color: #374151;
+}

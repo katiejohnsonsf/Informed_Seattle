@@ -33,4 +33,11 @@ urlpatterns = [
         distill_file="document/{meeting_id}/{legislation_id}/{document_pk}/{style}/index.html",
     ),
     distill_path("", views.index, name="index", distill_file="index.html"),
+    distill_path(
+        "evaluations/",
+        views.evaluations,
+        name="evaluations",
+        distill_func=views.distill_evaluations,
+        distill_file="evaluations/index.html",
+    ),
 ]

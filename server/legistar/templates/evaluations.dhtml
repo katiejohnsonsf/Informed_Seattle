@@ -1,0 +1,93 @@
+{% extends "base.dhtml" %}
+{% block page_title %}Council Bill Summary Evaluations{% endblock page_title %}
+{% block title %}
+  <section class="title">
+    <p class="title-eyebrow">Automated Quality Assessment</p>
+    <h1 class="big-title">Council Bill Summary Evaluations</h1>
+    <p class="title-tagline">Rubric-based scoring by Claude &mdash; completeness &amp; faithfulness per dimension</p>
+  </section>
+{% endblock title %}
+{% block content %}
+  <div class="eval-legend">
+    <h3 class="eval-legend-title">Evaluation Dimensions</h3>
+    <dl class="eval-legend-grid">
+      <dt>Headline Accuracy</dt><dd>Does the headline faithfully represent the bill&rsquo;s core change?</dd>
+      <dt>Proposed Intent</dt><dd>Does &ldquo;What Was Originally Proposed&rdquo; reflect the introduced text?</dd>
+      <dt>Final Text Fidelity</dt><dd>Does &ldquo;What The Final Text Does&rdquo; match the enacted/amended language?</dd>
+      <dt>Amendment Accuracy</dt><dd>Are amendments and votes described accurately and completely?</dd>
+      <dt>Accessibility</dt><dd>Is language plain enough for a non-lawyer Seattle resident?</dd>
+      <dt>Neutrality</dt><dd>Is the summary free of editorial framing or political spin?</dd>
+    </dl>
+    <p class="eval-legend-note">Each dimension is scored 1&ndash;5 for <strong>completeness</strong> (nothing important omitted) and <strong>faithfulness</strong> (nothing stated that isn&rsquo;t in the source). Percentages shown in the summary row are averages across all six dimensions, converted to a 0&ndash;100% scale.</p>
+  </div>
+
+  {% if evaluations %}
+    <div class="eval-table" role="table" aria-label="Council bill summary evaluations">
+
+      <div class="eval-table-header" role="row">
+        <span class="eval-col-cb" role="columnheader">CB #</span>
+        <span class="eval-col-headline" role="columnheader">Headline</span>
+        <span class="eval-col-score" role="columnheader">Completeness</span>
+        <span class="eval-col-score" role="columnheader">Faithfulness</span>
+        <span class="eval-col-chevron" role="columnheader" aria-hidden="true"></span>
+      </div>
+
+      {% for ev in evaluations %}
+        <details class="eval-row" role="row">
+          <summary class="eval-row-summary" role="cell">
+            <span class="eval-col-cb">{{ ev.cb_number }}</span>
+            <span class="eval-col-headline">{{ ev.headline }}</span>
+            <span class="eval-col-score">
+              {% if ev.completeness_pct is not None %}
+                <span class="eval-score-badge {% if ev.completeness_pct >= 80 %}eval-score-high{% elif ev.completeness_pct >= 60 %}eval-score-mid{% else %}eval-score-low{% endif %}">{{ ev.completeness_pct }}%</span>
+              {% else %}
+                <span class="eval-score-pending">—</span>
+              {% endif %}
+            </span>
+            <span class="eval-col-score">
+              {% if ev.faithfulness_pct is not None %}
+                <span class="eval-score-badge {% if ev.faithfulness_pct >= 80 %}eval-score-high{% elif ev.faithfulness_pct >= 60 %}eval-score-mid{% else %}eval-score-low{% endif %}">{{ ev.faithfulness_pct }}%</span>
+              {% else %}
+                <span class="eval-score-pending">—</span>
+              {% endif %}
+            </span>
+            <span class="eval-col-chevron" aria-hidden="true">
+              <svg class="eval-chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </summary>
+
+          <div class="eval-row-body">
+            <table class="eval-dim-table">
+              <thead>
+                <tr>
+                  <th>Dimension</th>
+                  <th>Completeness (1&ndash;5)</th>
+                  <th>Faithfulness (1&ndash;5)</th>
+                  <th>Reasoning</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for dim in ev.dimensions %}
+                  <tr>
+                    <td class="eval-dim-label">{{ dim.label }}</td>
+                    <td class="eval-dim-score">{{ dim.completeness }}</td>
+                    <td class="eval-dim-score">{{ dim.faithfulness }}</td>
+                    <td class="eval-dim-reasoning">{{ dim.reasoning }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      {% endfor %}
+
+    </div>
+  {% else %}
+    <div class="eval-empty">
+      <p>No summary evaluations have been generated yet.</p>
+      <p class="eval-empty-hint">Run <code>python manage.py evaluate_summaries</code> to score the current bill summaries.</p>
+    </div>
+  {% endif %}
+{% endblock content %}

@@ -17,6 +17,7 @@ from .models import (
     LegislationSummary,
     Meeting,
     MeetingSummary,
+    SummaryEvaluation,
 )
 
 _SUMMARY_PENDING = "Summary pending\u2026"
@@ -801,3 +802,67 @@ def document(
 def index(request):
     """Render the index page, which currently meta-redirects to /calendar/concise/"""
     return render(request, "index.dhtml")
+
+
+# Human-readable labels for each rubric dimension, in display order.
+_RUBRIC_DIMENSIONS = [
+    ("headline_accuracy", "Headline Accuracy"),
+    ("proposed_intent_fidelity", "Proposed Intent"),
+    ("final_text_fidelity", "Final Text Fidelity"),
+    ("amendment_accuracy", "Amendment Accuracy"),
+    ("accessibility", "Accessibility"),
+    ("neutrality", "Neutrality"),
+]
+
+
+def distill_evaluations():
+    """Yield a single empty dict so Django Distill generates evaluations/index.html."""
+    yield {}
+
+
+@require_GET
+def evaluations(request):
+    """Render the summary evaluations page."""
+    evals_qs = SummaryEvaluation.objects.select_related(
+        "legislation_summary__legislation"
+    ).order_by("legislation_summary__legislation__record_no")
+
+    evaluation_contexts = []
+    for ev in evals_qs:
+        leg = ev.legislation_summary.legislation
+        completeness_pct = (
+            round(ev.overall_completeness / 5 * 100)
+            if ev.overall_completeness is not None
+            else None
+        )
+        faithfulness_pct = (
+            round(ev.overall_faithfulness / 5 * 100)
+            if ev.overall_faithfulness is not None
+            else None
+        )
+        dimensions = []
+        for key, label in _RUBRIC_DIMENSIONS:
+            dim_data = ev.scores.get(key, {})
+            dimensions.append(
+                {
+                    "label": label,
+                    "completeness": dim_data.get("completeness", "\u2014"),
+                    "faithfulness": dim_data.get("faithfulness", "\u2014"),
+                    "reasoning": dim_data.get("reasoning", ""),
+                }
+            )
+        evaluation_contexts.append(
+            {
+                "cb_number": leg.record_no,
+                "headline": ev.legislation_summary.headline,
+                "completeness_pct": completeness_pct,
+                "faithfulness_pct": faithfulness_pct,
+                "dimensions": dimensions,
+            }
+        )
+
+    return render(
+        request,
+        "evaluations.dhtml",
+        {"evaluations": evaluation_contexts},
+    )
