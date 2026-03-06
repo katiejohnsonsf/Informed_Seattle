@@ -145,7 +145,9 @@ def _build_user_message(source_text: str, summary_body: str, headline: str) -> s
     )
 
 
-def _call_claude(client, model: str, source_text: str, summary_body: str, headline: str) -> dict:
+def _call_claude(
+    client, model: str, source_text: str, summary_body: str, headline: str
+) -> dict:
     """
     Call Claude with the evaluation prompt and return the parsed tool input.
 
@@ -181,8 +183,12 @@ def _compute_averages(scores: dict) -> tuple[float | None, float | None]:
         if "faithfulness" in dim_scores:
             faithfulness_vals.append(dim_scores["faithfulness"])
 
-    avg_c = sum(completeness_vals) / len(completeness_vals) if completeness_vals else None
-    avg_f = sum(faithfulness_vals) / len(faithfulness_vals) if faithfulness_vals else None
+    avg_c = (
+        sum(completeness_vals) / len(completeness_vals) if completeness_vals else None
+    )
+    avg_f = (
+        sum(faithfulness_vals) / len(faithfulness_vals) if faithfulness_vals else None
+    )
     return avg_c, avg_f
 
 
