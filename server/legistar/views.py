@@ -89,7 +89,26 @@ def _is_district_seat(district) -> bool:
 
 
 def _extract_amendments(legislation) -> list[dict]:
-    """Return amendment actions from the legislation's action history rows."""
+    """Return amendments from AmendmentSummary records, falling back to action rows."""
+    # Use AmendmentSummary records as the authoritative source
+    amendment_summaries = list(
+        legislation.amendment_summaries.all().order_by("amendment_number")
+    )
+    if amendment_summaries:
+        amendments = []
+        for s in amendment_summaries:
+            sponsors = ", ".join(p["name"] for p in (s.sponsors or []) if "name" in p)
+            amendments.append(
+                {
+                    "date": s.created_at.date(),
+                    "action": s.short_title or f"Amendment {s.amendment_number}",
+                    "action_by": sponsors,
+                    "result": "Pass as Amended" if s.pass_as_amended else "",
+                }
+            )
+        return amendments
+
+    # Fall back to action history rows
     amendments = []
     try:
         for row in legislation.crawl_data.rows:
