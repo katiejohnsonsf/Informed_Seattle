@@ -847,6 +847,15 @@ h4.action-type {
   max-width: 200px;
 }
 
+.vp-amendment-vote {
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  display: inline-block;
+}
+
 
 /* ---- Vote status labels (below map) ---- */
 

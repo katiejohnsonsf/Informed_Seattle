@@ -104,6 +104,7 @@ def _extract_amendments(legislation) -> list[dict]:
                     "action": s.short_title or f"Amendment {s.amendment_number}",
                     "action_by": sponsors,
                     "result": "Pass as Amended" if s.pass_as_amended else "",
+                    "votes": (s.votes_json or {}).get("rows", []),
                 }
             )
         return amendments

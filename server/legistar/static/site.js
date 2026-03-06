@@ -93,7 +93,22 @@ function computeBounds(geojson) {
   return [[w, s], [e, n]];
 }
 
-function enrichGeoJSON(geojson, byDistrict, amendmentsByLastName) {
+function enrichGeoJSON(geojson, byDistrict, amendments) {
+  // Build sponsor lookup: lastName → amendment short title
+  var amendmentsByLastName = {};
+  // Build vote lookup: full member name (lowercase) → vote row
+  var amendmentVotesByName = {};
+  (amendments || []).forEach(function (a) {
+    (a.action_by || "").split(/,\s*/).forEach(function (name) {
+      var parts = name.trim().split(/\s+/);
+      var lastName = parts[parts.length - 1].toLowerCase();
+      if (lastName) amendmentsByLastName[lastName] = a.action;
+    });
+    (a.votes || []).forEach(function (v) {
+      if (v.name) amendmentVotesByName[v.name.toLowerCase()] = v;
+    });
+  });
+
   return {
     type: "FeatureCollection",
     features: geojson.features.map(function (f) {
@@ -102,7 +117,8 @@ function enrichGeoJSON(geojson, byDistrict, amendmentsByLastName) {
       var vtype = v ? (v.in_favor ? "yes" : v.opposed ? "no" : v.absent ? "absent" : "unknown") : "unknown";
       var memberName = (v && v.name) ? v.name : (DISTRICT_MEMBERS[d] || "");
       var memberLastName = memberName.split(/\s+/).pop().toLowerCase();
-      var amendmentText = (amendmentsByLastName && amendmentsByLastName[memberLastName]) || "";
+      var amendmentText = amendmentsByLastName[memberLastName] || "";
+      var av = amendmentVotesByName[memberName.toLowerCase()] || null;
       return Object.assign({}, f, {
         id: d,
         properties: Object.assign({}, f.properties, {
@@ -110,6 +126,8 @@ function enrichGeoJSON(geojson, byDistrict, amendmentsByLastName) {
           vote_text: v ? v.vote : "",
           vote_type: vtype,
           amendment_text: amendmentText,
+          amendment_vote_text: av ? av.vote : "",
+          amendment_vote_type: av ? (av.in_favor ? "yes" : av.opposed ? "no" : "absent") : "",
         }),
       });
     }),
@@ -128,16 +146,8 @@ function initBillMap(canvas, baseGeoJSON) {
 
   var amendments;
   try { amendments = JSON.parse(canvas.dataset.amendments || "[]"); } catch (e) { amendments = []; }
-  var amendmentsByLastName = {};
-  (amendments || []).forEach(function (a) {
-    (a.action_by || "").split(/,\s*/).forEach(function (name) {
-      var parts = name.trim().split(/\s+/);
-      var lastName = parts[parts.length - 1].toLowerCase();
-      if (lastName) amendmentsByLastName[lastName] = a.action;
-    });
-  });
 
-  var geojson = enrichGeoJSON(baseGeoJSON, byDistrict, amendmentsByLastName);
+  var geojson = enrichGeoJSON(baseGeoJSON, byDistrict, amendments);
   var bounds  = computeBounds(geojson);
 
   var map = new maplibregl.Map({
@@ -222,11 +232,13 @@ function initBillMap(canvas, baseGeoJSON) {
 
         var p = ev.features[0].properties;
         var cls = p.vote_type === "yes" ? "vp-yes" : p.vote_type === "no" ? "vp-no" : "vp-absent";
+        var avCls = p.amendment_vote_type === "yes" ? "vp-yes" : p.amendment_vote_type === "no" ? "vp-no" : "vp-absent";
         popup.setLngLat(ev.lngLat).setHTML(
           '<div class="vp-district">District ' + p.district + "</div>" +
           (p.member_name
             ? '<div class="vp-name">'  + p.member_name + "</div>" +
               '<div class="vp-vote ' + cls + '">' + (p.vote_text || "Unknown") + "</div>" +
+              (p.amendment_vote_text ? '<div class="vp-amendment-vote ' + avCls + '">Amendment: ' + p.amendment_vote_text + "</div>" : "") +
               (p.amendment_text ? '<div class="vp-amendment">Sponsored: ' + p.amendment_text + "</div>" : "")
             : '<div class="vp-vote vp-absent">No data</div>')
         ).addTo(map);
@@ -252,10 +264,12 @@ function initBillMap(canvas, baseGeoJSON) {
 
         var p = ev.features[0].properties;
         var memberName = DISTRICT_MEMBERS[p.district] || "";
+        var avCls2 = p.amendment_vote_type === "yes" ? "vp-yes" : p.amendment_vote_type === "no" ? "vp-no" : "vp-absent";
         popup.setLngLat(ev.lngLat).setHTML(
           '<div class="vp-district">District ' + p.district + "</div>" +
           (memberName ? '<div class="vp-name">' + memberName + "</div>" : "") +
           '<div class="vp-vote vp-upcoming">Vote upcoming</div>' +
+          (p.amendment_vote_text ? '<div class="vp-amendment-vote ' + avCls2 + '">Amendment: ' + p.amendment_vote_text + "</div>" : "") +
           (p.amendment_text ? '<div class="vp-amendment">Sponsored: ' + p.amendment_text + "</div>" : "")
         ).addTo(map);
       });
