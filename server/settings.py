@@ -118,6 +118,16 @@ OPENAI_ORGANIZATION = os.environ.get("OPENAI_ORGANIZATION")
 
 
 # --------------------------------------------------------------------
+# Together AI config (used for OLMo-13B summarization via API)
+# --------------------------------------------------------------------
+
+TOGETHER_API_KEY = os.environ.get("TOGETHER_API_KEY")
+TOGETHER_MODEL = os.environ.get(
+    "TOGETHER_MODEL", "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+)
+
+
+# --------------------------------------------------------------------
 # Anthropic / Claude config
 # --------------------------------------------------------------------
 

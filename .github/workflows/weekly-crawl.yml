@@ -32,21 +32,13 @@ jobs:
           environment-name: learn_connect
           cache-environment: true  # uses actions/cache@v4 internally
 
-      # Cache the OLMo model (~6 GB) so we don't re-download every week
-      - name: Cache HuggingFace models
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/huggingface/hub
-          key: huggingface-olmo-2-0425-1b-instruct
-
       - name: Create .env file from secrets
         run: |
           cat > .env <<EOF
           DEBUG=NO
           SECRET_KEY=${{ secrets.SECRET_KEY }}
-          OLMO_MODEL_NAME=allenai/OLMo-2-0425-1B-Instruct
-          OLMO_DEVICE=cpu
-          OLMO_MAX_LENGTH=2048
+          TOGETHER_API_KEY=${{ secrets.TOGETHER_API_KEY }}
+          TOGETHER_MODEL=meta-llama/Llama-3.3-70B-Instruct-Turbo
           CRAWL_INTERVAL_DAYS=7
           CRAWL_TIME=01:30
           ANTHROPIC_API_KEY=${{ secrets.INFORMED_SEATTLE_EVALUATOR }}
