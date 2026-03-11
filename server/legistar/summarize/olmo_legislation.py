@@ -243,7 +243,7 @@ in 2-3 sentences how the final version differs from the original:
 Title: {title}
 Original proposal excerpt: {analysis.original_proposal[:800]}
 Amendments made: {amendments_text}
-Final text excerpt: {analysis.final_text[:800]}
+Final text excerpt: {(analysis.final_text or "")[:800]}
 
 Key differences from the original:"""
     return olmo.generate(prompt, max_new_tokens=200, temperature=0.3)
