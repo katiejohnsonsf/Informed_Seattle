@@ -1,5 +1,6 @@
 import datetime
 import json
+import re
 
 from django.conf import settings
 from django.http import Http404
@@ -82,6 +83,51 @@ def _normalize_member_name(raw: str) -> str:
             name = name[len(prefix) :]
             break
     return name
+
+
+def _amendment_sponsors(amendments: list) -> set[str]:
+    """Return normalized last-names of members who authored/sponsored amendments."""
+    sponsors: set[str] = set()
+    for a in amendments:
+        raw = a.get("action_by", "")
+        # Split on "Councilmember" to handle compound entries like
+        # "Councilmember Lin Councilmember Foster"
+        parts = re.split(r"(?i)\bcouncilmember\b", raw)
+        for part in parts:
+            name = _normalize_member_name(part.strip())
+            if name:
+                last = name.split()[-1]
+                sponsors.add(last)
+    return sponsors
+
+
+def _build_vote_table(
+    district_votes: list, at_large_votes: list, amendments: list
+) -> list[dict]:
+    """Build a per-member vote table for display."""
+    sponsors = _amendment_sponsors(amendments)
+    rows = []
+    for v in district_votes + at_large_votes:
+        dist = v["district"]
+        last = v["name"].lower().split()[-1]
+        sponsored = last in sponsors
+        label = f"District {dist}" if dist <= 7 else f"Position {dist} \u2014 At-Large"
+        if v["in_favor"]:
+            vote_label, vote_class = "Yes", "vote-yes"
+        elif v["opposed"]:
+            vote_label, vote_class = "No", "vote-no"
+        elif v["absent"]:
+            vote_label, vote_class = "Absent", "vote-absent"
+        else:
+            vote_label, vote_class = v.get("vote", "\u2014"), "vote-unknown"
+        rows.append({
+            "name": v["name"],
+            "district_label": label,
+            "sponsored_amendment": sponsored,
+            "vote": vote_label,
+            "vote_class": vote_class,
+        })
+    return rows
 
 
 def _classify_vote(vote_str: str) -> dict:
@@ -621,6 +667,7 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         "vote_date": vote_date,
         "amendments": amendments,
         "amendments_json": amendments_json,
+        "vote_table": _build_vote_table(district_votes, at_large_votes, amendments),
         "document_table_contexts": [
             _document_table_context(document, style)
             for document in legislation.documents.all()

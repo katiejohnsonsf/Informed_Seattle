@@ -131,6 +131,29 @@
         <div class="vote-map-section">
           <h3 class="vote-map-title">Votes</h3>
 
+          {% if entry.legislation.vote_table %}
+          <table class="vote-member-table">
+            <thead>
+              <tr>
+                <th>Council Member</th>
+                <th>Seat</th>
+                <th>Sponsored Amendment</th>
+                <th>Final Vote</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in entry.legislation.vote_table %}
+              <tr>
+                <td>{{ row.name }}</td>
+                <td class="vote-seat">{{ row.district_label }}</td>
+                <td class="vote-amendment">{% if row.sponsored_amendment %}Yes{% else %}—{% endif %}</td>
+                <td class="vote-result {{ row.vote_class }}">{{ row.vote }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+
           <div class="bill-vote-map">
             <div class="bill-map-canvas"
                  data-votes="{{ entry.legislation.district_votes_json }}"
