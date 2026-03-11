@@ -111,7 +111,12 @@ def _build_vote_table(
         dist = v["district"]
         last = v["name"].lower().split()[-1]
         sponsored = last in sponsors
-        label = f"District {dist}" if dist <= 7 else f"Position {dist} \u2014 At-Large"
+        if isinstance(dist, int) and dist <= 7:
+            label = f"District {dist}"
+        elif isinstance(dist, int):
+            label = f"Position {dist} \u2014 At-Large"
+        else:
+            label = "At-Large"
         if v["in_favor"]:
             vote_label, vote_class = "Yes", "vote-yes"
         elif v["opposed"]:
