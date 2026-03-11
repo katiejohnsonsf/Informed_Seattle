@@ -177,9 +177,28 @@ SUMMARY: [your detailed summary here]"""
 _olmo_client = None
 
 
-def get_olmo_client() -> OLMoClient:
-    """Get or create the global OLMo client instance."""
+def get_olmo_client():
+    """Get or create the global summarization client.
+
+    Returns a TogetherClient (API-based) when TOGETHER_API_KEY is configured,
+    otherwise loads the local OLMo weights.
+    """
     global _olmo_client
     if _olmo_client is None:
-        _olmo_client = OLMoClient()
+        import os
+
+        together_key = os.environ.get("TOGETHER_API_KEY")
+        if not together_key:
+            try:
+                from django.conf import settings
+
+                together_key = getattr(settings, "TOGETHER_API_KEY", None)
+            except Exception:
+                pass
+        if together_key:
+            from server.lib.together_client import get_together_client
+
+            _olmo_client = get_together_client()
+        else:
+            _olmo_client = OLMoClient()
     return _olmo_client

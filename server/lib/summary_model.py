@@ -59,18 +59,11 @@ class SummaryStyle:
 
     @property
     def client(self):
-        """Lazy-load Together AI client if configured, else fall back to local OLMo."""
+        """Lazy-load summarization client (Together AI or local OLMo)."""
         if self._client is None:
-            from django.conf import settings
+            from server.lib.olmo_client import get_olmo_client
 
-            if getattr(settings, "TOGETHER_API_KEY", None):
-                from server.lib.together_client import get_together_client
-
-                self._client = get_together_client()
-            else:
-                from server.lib.olmo_client import get_olmo_client
-
-                self._client = get_olmo_client()
+            self._client = get_olmo_client()
         return self._client
 
     def generate_summary(self, text: str, **kwargs) -> dict:
