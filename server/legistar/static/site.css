@@ -910,6 +910,40 @@ h4.action-type {
   margin-top: 0.75rem;
 }
 
+/* ---- Pagination ---- */
+
+.pagination-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
+  gap: 1rem;
+}
+
+.pagination-link {
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: #1d4ed8;
+}
+
+.pagination-link:hover {
+  text-decoration: underline;
+}
+
+.pagination-disabled {
+  color: #d1d5db;
+  cursor: default;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
 
 .vote-status-result {
   margin-top: 0.75rem;

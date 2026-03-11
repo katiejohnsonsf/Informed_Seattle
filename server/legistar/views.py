@@ -22,6 +22,7 @@ from .models import (
 
 _SUMMARY_PENDING = "Summary pending\u2026"
 _COUNCIL_BILL_KIND = "Council Bill"
+_PAGE_SIZE = 16
 
 
 def _is_council_bill(legislation) -> bool:
@@ -867,16 +868,68 @@ def document(
     )
 
 
+def _previous_legislation_context(style: str, page: int) -> dict:
+    """Build template context for a paginated previous-legislation page."""
+    import math
+
+    all_entries = _build_previous_bill_entries(style)
+    n_pages = max(1, math.ceil(len(all_entries) / _PAGE_SIZE))
+    if page < 1 or page > n_pages:
+        raise Http404(f"Page {page} out of range")
+
+    start = (page - 1) * _PAGE_SIZE
+    page_entries = all_entries[start : start + _PAGE_SIZE]
+
+    dates = [e["meeting_date"] for e in page_entries]
+    date_range_start = min(dates) if dates else None
+    date_range_end = max(dates) if dates else None
+
+    # Relative URLs depend on page depth:
+    # page 1:  previous-legislation/<style>/           (2 levels deep)
+    # page N:  previous-legislation/<style>/page/<n>/  (4 levels deep)
+    if page == 1:
+        root = "../../"
+        prev_page_url = None
+        next_page_url = "page/2/" if n_pages > 1 else None
+    else:
+        root = "../../../../"
+        prev_page_url = "../../" if page == 2 else f"../{page - 1}/"
+        next_page_url = f"../{page + 1}/" if page < n_pages else None
+
+    return {
+        "style": style,
+        "bill_entries": page_entries,
+        "page": page,
+        "n_pages": n_pages,
+        "date_range_start": date_range_start,
+        "date_range_end": date_range_end,
+        "prev_page_url": prev_page_url,
+        "next_page_url": next_page_url,
+        "calendar_url": f"{root}calendar/{style}/",
+    }
+
+
 @require_GET
 def previous_legislation(request, style: str):
-    """Render the previous-legislation page."""
+    """Render page 1 of the previous-legislation view."""
     if style not in SUMMARIZATION_STYLES:
         raise Http404(f"Unknown style: {style}")
-    entries = _build_previous_bill_entries(style)
     return render(
         request,
         "previous_legislation.dhtml",
-        {"style": style, "bill_entries": entries},
+        _previous_legislation_context(style, page=1),
+    )
+
+
+@require_GET
+def previous_legislation_page(request, style: str, page: int):
+    """Render page N (N ≥ 2) of the previous-legislation view."""
+    if style not in SUMMARIZATION_STYLES:
+        raise Http404(f"Unknown style: {style}")
+    return render(
+        request,
+        "previous_legislation.dhtml",
+        _previous_legislation_context(style, page=page),
     )
 
 
@@ -898,9 +951,20 @@ _RUBRIC_DIMENSIONS = [
 
 
 def distill_previous_legislation():
-    """Yield all style parameterizations for the previous-legislation static page."""
+    """Yield page-1 parameterizations for the previous-legislation static page."""
     for style in SUMMARIZATION_STYLES:
         yield {"style": style}
+
+
+def distill_previous_legislation_pages():
+    """Yield page 2+ parameterizations for paginated previous-legislation pages."""
+    import math
+
+    for style in SUMMARIZATION_STYLES:
+        all_entries = _build_previous_bill_entries(style)
+        n_pages = max(1, math.ceil(len(all_entries) / _PAGE_SIZE))
+        for page in range(2, n_pages + 1):
+            yield {"style": style, "page": page}
 
 
 def distill_evaluations():

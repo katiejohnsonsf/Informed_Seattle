@@ -8,9 +8,14 @@
 {% block title %}
   <section class="title">
     <p class="title-eyebrow">Learn: A Proof of Concept Seattle Legislative Plain-Text Translator</p>
-    <h1 class="big-title">Previous Legislation</h1>
+    <h1 class="big-title">
+      Previous Legislation
+      {% if date_range_start and date_range_end %}
+      <br><span style="font-size: 0.65em; font-weight: 600;">{{ date_range_start|date:"M j" }} &ndash; {{ date_range_end|date:"M j, Y" }}</span>
+      {% endif %}
+    </h1>
     <p class="title-tagline">Learn<span class="tagline-dot">&bull;</span>Connect<span class="tagline-dot">&bull;</span>Engage</p>
-    <p class="title-eval-link"><a href="../../calendar/{{ style }}/">&larr; Back to current bills</a></p>
+    <p class="title-eval-link"><a href="{{ calendar_url }}">&larr; Back to current bills</a></p>
   </section>
 {% endblock title %}
 {% block content %}
@@ -103,6 +108,20 @@
     <p>No previous legislation found.</p>
   {% endfor %}
 
-  <p class="title-eval-link" style="margin-top: 2rem;"><a href="../../calendar/{{ style }}/">&larr; Back to current bills</a></p>
+  <nav class="pagination-nav">
+    {% if prev_page_url %}
+      <a href="{{ prev_page_url }}" class="pagination-link pagination-prev">&larr; Newer bills</a>
+    {% else %}
+      <span class="pagination-link pagination-disabled">&larr; Newer bills</span>
+    {% endif %}
+    <span class="pagination-info">Page {{ page }} of {{ n_pages }}</span>
+    {% if next_page_url %}
+      <a href="{{ next_page_url }}" class="pagination-link pagination-next">Older bills &rarr;</a>
+    {% else %}
+      <span class="pagination-link pagination-disabled">Older bills &rarr;</span>
+    {% endif %}
+  </nav>
+
+  <p class="title-eval-link" style="margin-top: 1rem;"><a href="{{ calendar_url }}">&larr; Back to current bills</a></p>
 
 {% endblock content %}

@@ -23,7 +23,7 @@ from django.db.models import Q
 from server.lib.style import SUMMARIZATION_STYLES
 
 _COUNCIL_BILL_KIND = "Council Bill"
-_COUNCIL_BILL_LIMIT = 25
+_COUNCIL_BILL_LIMIT = 40
 
 
 def _recent_council_bill_ids():
