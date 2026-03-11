@@ -342,6 +342,48 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+async function shareBill(btn) {
+  const article = btn.closest("article[data-share-text]");
+  if (!article) return;
+  const text = article.dataset.shareText;
+  const confirm = btn.querySelector(".share-btn-confirm");
+  const label = btn.querySelector(".share-btn-label");
+
+  // Use native Web Share API on supported devices (mobile)
+  if (navigator.share) {
+    try {
+      await navigator.share({ text });
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return; // user cancelled
+    }
+  }
+
+  // Fallback: copy to clipboard
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    // Last resort: execCommand
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  }
+
+  // Show "Copied!" confirmation
+  label.style.display = "none";
+  confirm.textContent = "Copied!";
+  setTimeout(() => {
+    confirm.textContent = "";
+    label.style.display = "";
+  }, 2000);
+}
+
+
 // When the document is ready, make sure the summarization style is selected
 // correctly, and set up the event handler for when it changes. Use basic
 // javascript; no jQuery.

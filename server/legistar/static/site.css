@@ -523,6 +523,32 @@ h4.action-type {
   color: #888;
 }
 
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.share-btn:hover {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.share-btn-confirm {
+  color: #16a34a;
+  font-weight: 500;
+}
+
 .bill-entry .bill-committee {
   font-size: 0.95rem;
   font-weight: 500;

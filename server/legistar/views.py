@@ -22,7 +22,7 @@ from .models import (
 
 _SUMMARY_PENDING = "Summary pending\u2026"
 _COUNCIL_BILL_KIND = "Council Bill"
-_PAGE_SIZE = 16
+_PAGE_SIZE = 25
 
 
 def _is_council_bill(legislation) -> bool:
@@ -467,6 +467,58 @@ def _what_changed_from_amendments(legislation) -> str:
     return "\n".join(parts)
 
 
+def _build_share_text(legislation: Legislation, body: str, summary) -> str:
+    """Build plain-text content suitable for sharing via email or text message."""
+    lines = []
+    lines.append(f"{legislation.record_no} — {legislation.title}")
+    lines.append("")
+
+    if "WHAT WAS ORIGINALLY PROPOSED" in body:
+        _skip_sections = {"AMENDMENTS AND VOTES"}
+        current_section = None
+        skip = False
+        for raw in body.split("\n"):
+            line = raw.strip()
+            if not line:
+                continue
+            if line in _STRUCTURED_SECTION_HEADERS:
+                current_section = line
+                skip = line in _skip_sections
+                if not skip:
+                    lines.append("")
+                    lines.append(line.title())
+                    lines.append("")
+            elif not skip:
+                lines.append(line)
+    else:
+        lines.append(body)
+
+    # Append evaluation block if one exists for this summary
+    if summary is not None:
+        try:
+            ev = summary.evaluation
+            comp_pct = round(ev.overall_completeness / 5 * 100) if ev.overall_completeness else None
+            faith_pct = round(ev.overall_faithfulness / 5 * 100) if ev.overall_faithfulness else None
+            lines.append("")
+            lines.append("─" * 40)
+            lines.append("SUMMARY EVALUATION")
+            if comp_pct is not None:
+                lines.append(f"Completeness: {comp_pct}%  |  Faithfulness: {faith_pct}%")
+            for key, label in _RUBRIC_DIMENSIONS:
+                dim = ev.scores.get(key, {})
+                c = dim.get("completeness", "—")
+                f = dim.get("faithfulness", "—")
+                reasoning = dim.get("reasoning", "")
+                lines.append(f"\n{label}")
+                lines.append(f"  Completeness {c}/5  ·  Faithfulness {f}/5")
+                if reasoning:
+                    lines.append(f"  {reasoning}")
+        except Exception:
+            pass
+
+    return "\n".join(lines)
+
+
 def _legislation_context(legislation: Legislation, style: SummarizationStyle) -> dict:
     """
     Build context data for a `legislation`; this is used in our HTML
@@ -574,6 +626,7 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
             for document in legislation.documents.all()
             if DocumentSummary.objects.filter(document=document, style=style).exists()
         ],
+        "share_text": _build_share_text(legislation, body, summary),
     }
 
 
