@@ -814,7 +814,7 @@ class DetailScraper:
         values = list(
             itertools.takewhile(lambda detail: not self._is_label(detail), maybe_values)
         )
-        if len(values) != 1:
+        if len(values) < 1:
             raise LegistarError(f"Expected 1 value for {label}, got {len(values)}")
         value = values[0]
         if not isinstance(value, Tag):
