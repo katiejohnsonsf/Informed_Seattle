@@ -10,6 +10,10 @@ on:
         description: 'Crawl start date (YYYY-MM-DD). Defaults to 7 days ago.'
         required: false
         default: ''
+      eval_limit:
+        description: 'Max summaries to evaluate. Defaults to 20. Use 0 for no limit.'
+        required: false
+        default: '20'
 
 jobs:
   crawl-and-publish:
@@ -74,7 +78,14 @@ jobs:
 
       - name: Evaluate summaries with Claude
         shell: micromamba-shell {0}
-        run: python manage.py evaluate_summaries --limit 20
+        run: |
+          EVAL_LIMIT="${{ inputs.eval_limit }}"
+          EVAL_LIMIT="${EVAL_LIMIT:-20}"
+          if [ "$EVAL_LIMIT" = "0" ]; then
+            python manage.py evaluate_summaries
+          else
+            python manage.py evaluate_summaries --limit "$EVAL_LIMIT"
+          fi
 
       - name: Build static site
         shell: micromamba-shell {0}
