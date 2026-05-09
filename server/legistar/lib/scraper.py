@@ -36,8 +36,10 @@ CALENDAR_ROW_HEADERS = [
     "meeting location",
     "meeting details",
     "agenda",
+    "accessible agenda",
     "agenda packet",
     "minutes",
+    "accessible minutes",
     "seattle channel",
 ]
 
@@ -912,7 +914,9 @@ class LegistarScraper:
         """Perform a GET request and return a TableScraper object."""
         soup = self._get_soup(url)
         table_scraper = TableScraper.from_soup(self, soup)
-        if table_scraper.headers != exact_headers:
+        required = set(exact_headers) - {""}
+        actual = set(table_scraper.headers)
+        if not required.issubset(actual):
             raise LegistarError(f"Unexpected headers: {table_scraper.headers}")
         return table_scraper
 
@@ -933,7 +937,8 @@ class LegistarScraper:
         """Perform a GET request and return a TableScraper and DetailScraper object."""
         soup = self._get_soup(url)
         table_scraper = TableScraper.from_soup(self, soup)
-        if table_scraper.headers != exact_table_headers:
+        required = set(exact_table_headers) - {""}
+        if not required.issubset(set(table_scraper.headers)):
             raise LegistarError(f"Unexpected headers: {table_scraper.headers}")
         detail_scraper = DetailScraper(self, soup)
         if set(detail_scraper.labels) < set(required_detail_labels):
