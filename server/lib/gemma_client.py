@@ -78,7 +78,7 @@ class GemmaClient:
         self,
         text: str,
         style: str = "what_changed",
-        max_tokens: int = 100000,
+        **_kwargs,
     ) -> dict:
         """Summarize legislative text via the configured Gemma endpoint."""
         if style == "what_changed":
@@ -101,7 +101,7 @@ class GemmaClient:
                 "SUMMARY: [your detailed summary here]"
             )
 
-        response = self.generate(prompt, max_new_tokens=max_tokens)
+        response = self.generate(prompt)
 
         headline = ""
         body = ""
