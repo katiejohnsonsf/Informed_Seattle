@@ -40,7 +40,8 @@ class GemmaClient:
 
         if not self.api_key:
             raise ValueError(
-                "GEMMA_API_KEY is not set. Add it to your .env file or environment variables."
+                "GEMMA_API_KEY is not set. "
+                "Add it to your .env file or environment variables."
             )
 
     def _chat_completions_url(self) -> str:

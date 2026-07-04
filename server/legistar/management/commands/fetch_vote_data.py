@@ -107,7 +107,8 @@ class Command(BaseCommand):
                     n_c = len(updated.get("action_details", []))
                     n_m = len(updated.get("committee_action_details", []))
                     self.stdout.write(
-                        f"    Saved council={n_c} committee={n_m} record(s) for {bill.record_no}."
+                        f"    Saved council={n_c} committee={n_m} "
+                        f"record(s) for {bill.record_no}."
                     )
                 else:
                     skipped += 1

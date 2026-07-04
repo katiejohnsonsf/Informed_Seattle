@@ -107,7 +107,8 @@ def _amendment_sponsors(amendments: list) -> set[str]:
 
 
 def _extract_committee_votes(legislation) -> tuple[list, list, str]:
-    """Return (district_votes, at_large_votes, committee_name) from committee_action_details.
+    """Return (district_votes, at_large_votes, committee_name) from
+    committee_action_details.
 
     Returns empty lists and empty string when no committee vote data exists.
     """
@@ -710,7 +711,6 @@ def _build_share_text(legislation: Legislation, body: str, summary) -> str:
             if not line:
                 continue
             if line in _STRUCTURED_SECTION_HEADERS:
-                current_section = line
                 skip = line in _skip_sections
                 if not skip:
                     lines.append("")

@@ -114,6 +114,7 @@ jobs:
           git add data/db.sqlite3
           git diff --staged --quiet || git commit -m \
             "chore: weekly data update $(date +'%Y-%m-%d')"
+          git pull --rebase origin main
           git push
 
       - name: Upload Pages artifact
