@@ -52,6 +52,7 @@ class GemmaClient:
         prompt: str,
         temperature: float = 0.7,
         top_p: float = 0.9,
+        **_kwargs,
     ) -> str:
         """Generate text from a prompt via the configured Gemma endpoint."""
         payload = {
