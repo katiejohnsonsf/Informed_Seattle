@@ -1,4 +1,59 @@
+import os
+
 from django.db import models
+
+
+def _get_setting_or_env(name: str):
+    value = os.environ.get(name)
+    if value is not None:
+        return value
+
+    try:
+        from django.conf import settings
+
+        return getattr(settings, name, None)
+    except Exception:
+        return None
+
+
+def get_summarization_client():
+    """
+    Return the configured summarization client.
+
+    Selection order:
+    1. SUMMARIZATION_BACKEND if explicitly set
+    2. GEMMA_API_KEY => gemma
+    3. TOGETHER_API_KEY => together
+    4. otherwise => local olmo
+    """
+    backend = (_get_setting_or_env("SUMMARIZATION_BACKEND") or "auto").lower()
+
+    if backend == "auto":
+        if _get_setting_or_env("GEMMA_API_KEY"):
+            backend = "gemma"
+        elif _get_setting_or_env("TOGETHER_API_KEY"):
+            backend = "together"
+        else:
+            backend = "olmo"
+
+    if backend == "gemma":
+        from server.lib.gemma_client import get_gemma_client
+
+        return get_gemma_client()
+
+    if backend == "together":
+        from server.lib.together_client import get_together_client
+
+        return get_together_client()
+
+    if backend == "olmo":
+        from server.lib.olmo_client import get_olmo_client
+
+        return get_olmo_client()
+
+    raise ValueError(
+        "Unsupported SUMMARIZATION_BACKEND. Use one of: auto, gemma, together, olmo."
+    )
 
 
 class SummaryBaseModel(models.Model):
@@ -51,7 +106,7 @@ class SummaryBaseModel(models.Model):
 
 
 class SummaryStyle:
-    """Configuration for OLMo-based summarization."""
+    """Configuration for LLM-based summarization."""
 
     def __init__(self, name: str):
         self.name = name
@@ -59,19 +114,16 @@ class SummaryStyle:
 
     @property
     def client(self):
-        """Lazy-load summarization client (Together AI or local OLMo)."""
+        """Lazy-load the configured summarization client."""
         if self._client is None:
-            from server.lib.olmo_client import get_olmo_client
-
-            self._client = get_olmo_client()
+            self._client = get_summarization_client()
         return self._client
 
     def generate_summary(self, text: str, **kwargs) -> dict:
-        """Generate summary using OLMo 3."""
+        """Generate summary using the configured summarization backend."""
         return self.client.summarize(
             text=text,
             style=self.name,
-            max_tokens=kwargs.get("max_tokens", 256),
         )
 
 

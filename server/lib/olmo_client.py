@@ -4,8 +4,44 @@ OLMo 3 client for text generation and summarization.
 
 import os
 from typing import Optional
+from server.lib.gemma_client import GemmaClient
+from server.lib.together_client import TogetherClient
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+def _get_setting_or_env(name: str):
+    value = os.environ.get(name)
+    if value is not None:
+        return value
+
+    try:
+        from django.conf import settings
+
+        return getattr(settings, name, None)
+    except Exception:
+        return None
+
+
+def _select_summarization_backend() -> str:
+    """
+    Select which summarization backend to use.
+
+    Order:
+    1. explicit SUMMARIZATION_BACKEND
+    2. GEMMA_API_KEY => gemma
+    3. TOGETHER_API_KEY => together
+    4. fallback => olmo
+    """
+    backend = (_get_setting_or_env("SUMMARIZATION_BACKEND") or "auto").lower()
+
+    if backend == "auto":
+        if _get_setting_or_env("GEMMA_API_KEY"):
+            return "gemma"
+        if _get_setting_or_env("TOGETHER_API_KEY"):
+            return "together"
+        return "olmo"
+
+    return backend
 
 
 def _select_device(requested: Optional[str] = None) -> str:
@@ -174,31 +210,39 @@ SUMMARY: [your detailed summary here]"""
 
 
 # Global instance (lazy loaded)
-_olmo_client = None
+_olmo_client: OLMoClient | GemmaClient | TogetherClient | None = None
 
 
 def get_olmo_client():
-    """Get or create the global summarization client.
+    """
+    Get or create the global summarization client.
 
-    Returns a TogetherClient (API-based) when TOGETHER_API_KEY is configured,
-    otherwise loads the local OLMo weights.
+    Despite the legacy name, this now returns the configured backend client:
+    - gemma
+    - together
+    - olmo
     """
     global _olmo_client
     if _olmo_client is None:
-        import os
+        backend = _select_summarization_backend()
 
-        together_key = os.environ.get("TOGETHER_API_KEY")
-        if not together_key:
-            try:
-                from django.conf import settings
+        if backend == "gemma":
+            from server.lib.gemma_client import get_gemma_client
 
-                together_key = getattr(settings, "TOGETHER_API_KEY", None)
-            except Exception:
-                pass
-        if together_key:
+            _olmo_client = get_gemma_client()
+
+        elif backend == "together":
             from server.lib.together_client import get_together_client
 
             _olmo_client = get_together_client()
-        else:
+
+        elif backend == "olmo":
             _olmo_client = OLMoClient()
+
+        else:
+            raise ValueError(
+                "Unsupported SUMMARIZATION_BACKEND. "
+                "Use one of: auto, gemma, together, olmo."
+            )
+
     return _olmo_client
