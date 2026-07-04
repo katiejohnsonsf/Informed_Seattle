@@ -43,6 +43,10 @@ jobs:
           cat > .env <<EOF
           DEBUG=NO
           SECRET_KEY=${{ secrets.SECRET_KEY }}
+          SUMMARIZATION_BACKEND=gemma
+          GEMMA_API_KEY=${{ secrets.GEMMA_API_KEY }}
+          GEMMA_API_URL=https://llmaven-prod-litellm-prod.lemonmoss-19296c81.westus2.azurecontainerapps.io/v1
+          GEMMA_MODEL_NAME=gemma-4-31b
           TOGETHER_API_KEY=${{ secrets.TOGETHER_API_KEY }}
           TOGETHER_MODEL=meta-llama/Llama-3.3-70B-Instruct-Turbo
           CRAWL_INTERVAL_DAYS=7
