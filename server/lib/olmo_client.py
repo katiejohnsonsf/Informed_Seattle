@@ -9,6 +9,7 @@ from server.lib.together_client import TogetherClient
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+
 def _get_setting_or_env(name: str):
     value = os.environ.get(name)
     if value is not None:

@@ -20,8 +20,10 @@ class GemmaClient:
         api_url: str | None = None,
         model_name: str | None = None,
     ):
-        self.api_key = api_key or getattr(settings, "GEMMA_API_KEY", None) or os.environ.get(
-            "GEMMA_API_KEY"
+        self.api_key = (
+            api_key
+            or getattr(settings, "GEMMA_API_KEY", None)
+            or os.environ.get("GEMMA_API_KEY")
         )
         self.api_url = (
             api_url

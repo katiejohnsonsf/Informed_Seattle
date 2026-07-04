@@ -1624,3 +1624,69 @@ h4.action-type {
   font-size: 0.8rem;
   color: #374151;
 }
+
+
+/* ---- Evaluation indicator dots ------------------------------------------ */
+
+.eval-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-left: 6px;
+  cursor: default;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Likert 1 = very poor (red) → 5 = very good (green) */
+.eval-dot-1 { background: #dc2626; }
+.eval-dot-2 { background: #f97316; }
+.eval-dot-3 { background: #eab308; }
+.eval-dot-4 { background: #84cc16; }
+.eval-dot-5 { background: #16a34a; }
+
+/* Tooltip card */
+.eval-dot-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #f9fafb;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  z-index: 200;
+  transition: opacity 0.15s;
+}
+
+.eval-dot:hover .eval-dot-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Small caret below the tooltip */
+.eval-dot-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1f2937;
+}
+
+/* Keep the dot inline with section headings */
+.bill-entry h1 .eval-dot,
+.bill-entry h2 .eval-dot {
+  margin-bottom: 2px;
+}

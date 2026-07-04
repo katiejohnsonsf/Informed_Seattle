@@ -111,7 +111,9 @@ def _extract_committee_votes(legislation) -> tuple[list, list, str]:
 
     Returns empty lists and empty string when no committee vote data exists.
     """
-    committee_details = (legislation.vote_data or {}).get("committee_action_details", [])
+    committee_details = (legislation.vote_data or {}).get(
+        "committee_action_details", []
+    )
     if not committee_details:
         return [], [], ""
 
@@ -147,8 +149,12 @@ def _extract_committee_votes(legislation) -> tuple[list, list, str]:
         if district_votes or at_large_votes:
             break  # use the first entry with actual rows
 
-    district_votes.sort(key=lambda v: v["district"] if isinstance(v["district"], int) else 99)
-    at_large_votes.sort(key=lambda v: v["district"] if isinstance(v["district"], int) else 99)
+    district_votes.sort(
+        key=lambda v: v["district"] if isinstance(v["district"], int) else 99
+    )
+    at_large_votes.sort(
+        key=lambda v: v["district"] if isinstance(v["district"], int) else 99
+    )
     return district_votes, at_large_votes, committee_name
 
 
@@ -196,8 +202,7 @@ def _build_vote_table(
     """
     sponsors = _amendment_sponsors(amendments)
     voted_names = {
-        _normalize_member_name(v["name"])
-        for v in district_votes + at_large_votes
+        _normalize_member_name(v["name"]) for v in district_votes + at_large_votes
     }
     rows = []
     for v in district_votes + at_large_votes:
@@ -216,15 +221,17 @@ def _build_vote_table(
             vote_label, vote_class = "Absent", "vote-absent"
         else:
             vote_label, vote_class = v.get("vote", "\u2014"), "vote-unknown"
-        rows.append({
-            "name": v["name"],
-            "district_label": label,
-            "sponsored_amendment": sponsored,
-            "vote": vote_label,
-            "vote_class": vote_class,
-            "non_committee": False,
-            "committee_name": "",
-        })
+        rows.append(
+            {
+                "name": v["name"],
+                "district_label": label,
+                "sponsored_amendment": sponsored,
+                "vote": vote_label,
+                "vote_class": vote_class,
+                "non_committee": False,
+                "committee_name": "",
+            }
+        )
 
     # When rendering a committee vote, append all council members who weren't
     # on the committee so the full table is always 9 rows.
@@ -244,15 +251,17 @@ def _build_vote_table(
                 continue
             dist = _COUNCIL_DISTRICTS[norm_name]
             label = f"District {dist}" if dist <= 7 else "At Large"
-            rows.append({
-                "name": display_name.title(),
-                "district_label": label,
-                "sponsored_amendment": False,
-                "vote": f"Not on {committee_name}",
-                "vote_class": "vote-non-committee",
-                "non_committee": True,
-                "committee_name": committee_name,
-            })
+            rows.append(
+                {
+                    "name": display_name.title(),
+                    "district_label": label,
+                    "sponsored_amendment": False,
+                    "vote": f"Not on {committee_name}",
+                    "vote_class": "vote-non-committee",
+                    "non_committee": True,
+                    "committee_name": committee_name,
+                }
+            )
     return rows
 
 
@@ -417,6 +426,40 @@ _STRUCTURED_SECTION_HEADERS = frozenset(
 
 _SKIP_SECTIONS = frozenset({"AMENDMENTS AND VOTES"})
 
+# Maps structured summary section headers to their evaluation rubric dimension key.
+_SECTION_TO_EVAL_DIMENSION = {
+    "WHAT WAS ORIGINALLY PROPOSED": "proposed_intent_fidelity",
+    "WHAT THE FINAL TEXT DOES": "final_text_fidelity",
+    "WHAT CHANGED FROM THE ORIGINAL": "amendment_accuracy",
+}
+
+
+def _eval_dot_color_class(score: float) -> str:
+    """Return a CSS class for a score on a 1–5 Likert scale."""
+    if score >= 4.5:
+        return "eval-dot-5"
+    if score >= 3.5:
+        return "eval-dot-4"
+    if score >= 2.5:
+        return "eval-dot-3"
+    if score >= 1.5:
+        return "eval-dot-2"
+    return "eval-dot-1"
+
+
+def _eval_dot_html(completeness, faithfulness) -> str:
+    """Return an HTML string for a colored eval dot with hover tooltip."""
+    avg = (completeness + faithfulness) / 2
+    cls = _eval_dot_color_class(avg)
+    return (
+        f'<span class="eval-dot {cls}" tabindex="0" aria-label="'
+        f'Completeness {completeness}/5, Faithfulness {faithfulness}/5">'
+        f'<span class="eval-dot-tooltip">'
+        f"Completeness: {completeness}/5<br>"
+        f"Faithfulness: {faithfulness}/5"
+        f"</span></span>"
+    )
+
 
 def _structured_summary_to_html(text: str):
     """Convert a structured summary with section headers into HTML.
@@ -443,13 +486,19 @@ def _structured_summary_to_html(text: str):
     return "\n".join(html_parts)
 
 
-def _split_structured_summary(text: str) -> tuple[str, str]:
+def _split_structured_summary(
+    text: str, eval_scores: dict | None = None
+) -> tuple[str, str]:
     """Split a structured summary into (what_changed_html, main_html).
 
     what_changed_html: just the WHAT CHANGED FROM THE ORIGINAL section.
     main_html: all other sections except AMENDMENTS AND VOTES and WHAT CHANGED.
+
+    If eval_scores is provided (mapping dimension key → {completeness, faithfulness}),
+    a colored indicator dot is appended to each matching section header.
     """
     from django.utils.html import format_html
+    from django.utils.safestring import mark_safe
 
     _WHAT_CHANGED = "WHAT CHANGED FROM THE ORIGINAL"
     lines = [s.strip() for s in text.split("\n")]
@@ -457,19 +506,26 @@ def _split_structured_summary(text: str) -> tuple[str, str]:
     main_parts: list[str] = []
     current_section: str | None = None
 
+    def _h2(header_text: str, section_key: str) -> str:
+        dot = mark_safe("")
+        if eval_scores:
+            dim = _SECTION_TO_EVAL_DIMENSION.get(section_key)
+            if dim and dim in eval_scores:
+                s = eval_scores[dim]
+                dot = mark_safe(
+                    _eval_dot_html(s.get("completeness", 0), s.get("faithfulness", 0))
+                )
+        return format_html('<h2 style="font-weight:700">{}{}</h2>', header_text, dot)
+
     for line in lines:
         if not line:
             continue
         if line in _STRUCTURED_SECTION_HEADERS:
             current_section = line
             if line == _WHAT_CHANGED:
-                what_changed_parts.append(
-                    format_html('<h2 style="font-weight:700">{}</h2>', line.title())
-                )
+                what_changed_parts.append(_h2(line.title(), line))
             elif line not in _SKIP_SECTIONS:
-                main_parts.append(
-                    format_html('<h2 style="font-weight:700">{}</h2>', line.title())
-                )
+                main_parts.append(_h2(line.title(), line))
         elif current_section == _WHAT_CHANGED:
             what_changed_parts.append(format_html("<p>{}</p>", line))
         elif current_section not in _SKIP_SECTIONS:
@@ -669,13 +725,23 @@ def _build_share_text(legislation: Legislation, body: str, summary) -> str:
     if summary is not None:
         try:
             ev = summary.evaluation
-            comp_pct = round(ev.overall_completeness / 5 * 100) if ev.overall_completeness else None
-            faith_pct = round(ev.overall_faithfulness / 5 * 100) if ev.overall_faithfulness else None
+            comp_pct = (
+                round(ev.overall_completeness / 5 * 100)
+                if ev.overall_completeness
+                else None
+            )
+            faith_pct = (
+                round(ev.overall_faithfulness / 5 * 100)
+                if ev.overall_faithfulness
+                else None
+            )
             lines.append("")
             lines.append("─" * 40)
             lines.append("SUMMARY EVALUATION")
             if comp_pct is not None:
-                lines.append(f"Completeness: {comp_pct}%  |  Faithfulness: {faith_pct}%")
+                lines.append(
+                    f"Completeness: {comp_pct}%  |  Faithfulness: {faith_pct}%"
+                )
             for key, label in _RUBRIC_DIMENSIONS:
                 dim = ev.scores.get(key, {})
                 c = dim.get("completeness", "—")
@@ -705,11 +771,31 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
     )
     body = summary.body if summary else "This summary is being generated."
 
+    # Fetch evaluation scores for indicator dots (if available)
+    from server.legistar.models import SummaryEvaluation
+
+    _eval = (
+        SummaryEvaluation.objects.filter(legislation_summary=summary).first()
+        if summary
+        else None
+    )
+    eval_scores = _eval.scores if _eval else None
+
+    # Headline eval dot
+    headline_eval_dot = ""
+    if eval_scores and "headline_accuracy" in eval_scores:
+        _hs = eval_scores["headline_accuracy"]
+        from django.utils.safestring import mark_safe as _ms
+
+        headline_eval_dot = _ms(
+            _eval_dot_html(_hs.get("completeness", 0), _hs.get("faithfulness", 0))
+        )
+
     # Use structured rendering for Council Bill summaries with section headers
     is_structured = summary and "WHAT WAS ORIGINALLY PROPOSED" in body
     if is_structured:
         rendered_summary = _structured_summary_to_html(body)
-        _, summary_without_what_changed = _split_structured_summary(body)
+        _, summary_without_what_changed = _split_structured_summary(body, eval_scores)
         # Use AmendmentSummary records as the authoritative source for what changed.
         # If none exist, hide the section entirely (don't show the LLM fallback).
         what_changed_html = _what_changed_from_amendments(legislation)
@@ -777,11 +863,16 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         _extract_committee_votes(legislation) if is_council_bill else ([], [], "")
     )
     using_committee_votes = (
-        not district_votes and not at_large_votes
+        not district_votes
+        and not at_large_votes
         and (committee_district_votes or committee_at_large_votes)
     )
-    display_district_votes = committee_district_votes if using_committee_votes else district_votes
-    display_at_large_votes = committee_at_large_votes if using_committee_votes else at_large_votes
+    display_district_votes = (
+        committee_district_votes if using_committee_votes else district_votes
+    )
+    display_at_large_votes = (
+        committee_at_large_votes if using_committee_votes else at_large_votes
+    )
     display_committee_name = committee_name if using_committee_votes else ""
 
     # vote_map_pending_label: text shown below the map when no full-council vote yet
@@ -789,7 +880,11 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         if "full council agenda" in _raw_status:
             vote_map_pending_label = "Full Council vote upcoming"
         elif using_committee_votes:
-            vote_map_pending_label = f"Committee vote — {committee_name}" if committee_name else "Committee vote"
+            vote_map_pending_label = (
+                f"Committee vote — {committee_name}"
+                if committee_name
+                else "Committee vote"
+            )
         elif "in committee" in _raw_status or "committee agenda" in _raw_status:
             vote_map_pending_label = "Bill is currently in committee"
         else:
@@ -811,6 +906,7 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         "summary": rendered_summary,
         "summary_what_changed": what_changed_html,
         "summary_without_what_changed": summary_without_what_changed,
+        "headline_eval_dot": headline_eval_dot,
         "bill_status_label": bill_status_label,
         "bill_status_tooltip": bill_status_tooltip,
         "district_votes": display_district_votes,
@@ -822,7 +918,10 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         "amendments": amendments,
         "amendments_json": amendments_json,
         "vote_table": _build_vote_table(
-            display_district_votes, display_at_large_votes, amendments, display_committee_name
+            display_district_votes,
+            display_at_large_votes,
+            amendments,
+            display_committee_name,
         ),
         "next_step": next_step,
         "document_table_contexts": [
@@ -1307,16 +1406,12 @@ def evaluations(request):
                     "reasoning": dim_data.get("reasoning", ""),
                     "completeness_bar": c_bar,
                     "faithfulness_bar": f_bar,
-                    "completeness_color": "high"
-                    if c_bar >= 80
-                    else "mid"
-                    if c_bar >= 60
-                    else "low",
-                    "faithfulness_color": "high"
-                    if f_bar >= 80
-                    else "mid"
-                    if f_bar >= 60
-                    else "low",
+                    "completeness_color": (
+                        "high" if c_bar >= 80 else "mid" if c_bar >= 60 else "low"
+                    ),
+                    "faithfulness_color": (
+                        "high" if f_bar >= 80 else "mid" if f_bar >= 60 else "low"
+                    ),
                 }
             )
         evaluation_contexts.append(
