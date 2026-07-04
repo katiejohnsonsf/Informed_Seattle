@@ -704,7 +704,6 @@ def _build_share_text(legislation: Legislation, body: str, summary) -> str:
 
     if "WHAT WAS ORIGINALLY PROPOSED" in body:
         _skip_sections = {"AMENDMENTS AND VOTES"}
-        current_section = None
         skip = False
         for raw in body.split("\n"):
             line = raw.strip()
