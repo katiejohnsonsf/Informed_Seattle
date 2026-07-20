@@ -60,10 +60,13 @@ def summarize_meeting_gpt35_concise(
 Provide a concise summary of the meeting's key items and legislative actions."""
 
         olmo = get_olmo_client()
-        body = olmo.generate(prompt, max_new_tokens=512, temperature=0.3)
+        body = olmo.generate(prompt, temperature=0.3)
 
-        headline_prompt = f"Create a brief headline for this {department_name} meeting (under 15 words)"  # noqa: E501
-        headline = olmo.generate(headline_prompt, max_new_tokens=30, temperature=0.3)
+        headline_prompt = (
+            f"Create a brief headline (under 15 words) for this {department_name} "
+            f"meeting based on the following summary:\n\n{body[:500]}\n\nHeadline:"
+        )
+        headline = olmo.generate(headline_prompt, temperature=0.3)
 
         return SummarizationSuccess(
             original_text=context,

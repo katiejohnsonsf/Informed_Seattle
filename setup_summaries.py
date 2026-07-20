@@ -114,6 +114,16 @@ def summarize_all_documents():
 
 _FAILED_HEADLINE = "Unable to summarize (see logs)"
 
+# Gemma sometimes responds with meta-prompts when given insufficient context.
+# Match any headline starting with these phrases so they get retried.
+_FAILED_HEADLINE_PREFIXES = ("Please provide",)
+
+
+def _is_failed_headline(headline: str) -> bool:
+    if headline == _FAILED_HEADLINE:
+        return True
+    return any(headline.startswith(p) for p in _FAILED_HEADLINE_PREFIXES)
+
 
 def clear_failed_summaries():
     """Delete failed legislation and meeting summaries so they get retried."""
@@ -139,11 +149,15 @@ def clear_failed_summaries():
     else:
         print("No failed legislation summaries found")
 
-    failed_meet = MeetingSummary.objects.filter(headline=_FAILED_HEADLINE)
-    meet_count = failed_meet.count()
+    # Clear meeting summaries with the sentinel headline OR Gemma meta-responses.
+    all_meeting_summaries = MeetingSummary.objects.all()
+    bad_ids = [s.id for s in all_meeting_summaries if _is_failed_headline(s.headline)]
+    meet_count = len(bad_ids)
     if meet_count:
-        failed_meet.delete()
+        MeetingSummary.objects.filter(id__in=bad_ids).delete()
         print(f"Cleared {meet_count} failed meeting summaries for retry")
+    else:
+        print("No failed meeting summaries found")
 
     print()
 
