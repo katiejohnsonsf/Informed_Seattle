@@ -72,7 +72,7 @@ class GemmaClient:
             self._chat_completions_url(),
             json=payload,
             headers=headers,
-            timeout=120,
+            timeout=300,
         )
         response.raise_for_status()
         data = response.json()
