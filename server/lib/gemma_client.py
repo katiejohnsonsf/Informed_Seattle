@@ -7,6 +7,7 @@ control.
 """
 
 import os
+import time
 import requests
 from django.conf import settings
 
@@ -68,14 +69,20 @@ class GemmaClient:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
-        response = requests.post(
-            self._chat_completions_url(),
-            json=payload,
-            headers=headers,
-            timeout=300,
-        )
-        response.raise_for_status()
-        data = response.json()
+        last_response = None
+        for attempt in range(3):
+            last_response = requests.post(
+                self._chat_completions_url(),
+                json=payload,
+                headers=headers,
+                timeout=300,
+            )
+            if last_response.status_code < 500:
+                break
+            if attempt < 2:
+                time.sleep(10 * (attempt + 1))
+        last_response.raise_for_status()
+        data = last_response.json()
         return data["choices"][0]["message"]["content"].strip()
 
     def summarize(
