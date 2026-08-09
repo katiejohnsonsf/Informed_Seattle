@@ -12,6 +12,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 django.setup()
 
 from server.documents.models import Document, DocumentSummary
+
+_FAILED_DOCUMENT_BODY = "(Please ignore: SUMMARIZATION FAILED)"
 from server.legistar.models import (
     Legislation,
     LegislationSummary,
@@ -39,6 +41,26 @@ def _recent_council_bill_ids():
         .order_by("-id")[:_COUNCIL_BILL_LIMIT]
         .values_list("id", flat=True)
     )
+
+
+def clear_failed_amendment_document_summaries():
+    """Delete failed DocumentSummary records for amendment documents so they get retried."""
+    print("=" * 80)
+    print("STEP 1.5: Clearing failed amendment document summaries for retry")
+    print("=" * 80)
+
+    failed = DocumentSummary.objects.filter(
+        document__title__icontains="amendment",
+        body=_FAILED_DOCUMENT_BODY,
+    )
+    count = failed.count()
+    if count:
+        failed.delete()
+        print(f"Cleared {count} failed amendment document summaries for retry")
+    else:
+        print("No failed amendment document summaries found")
+
+    print()
 
 
 def extract_all_documents():
@@ -314,6 +336,7 @@ def main():
 
     try:
         extract_all_documents()
+        clear_failed_amendment_document_summaries()
         summarize_all_documents()
         clear_failed_summaries()
         clear_council_bill_summaries()

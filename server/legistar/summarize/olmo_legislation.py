@@ -152,12 +152,28 @@ What was originally proposed:"""
 def _format_amendments_and_votes(
     analysis: LegislationAnalysis,
     action_details: list[dict[str, t.Any]] | None,
+    amendment_docs: list[dict[str, t.Any]] | None = None,
 ) -> str:
     """Format amendments and votes programmatically from structured data."""
     lines: list[str] = []
 
-    # Format amendments
-    if analysis.amendments:
+    # Format amendments — prefer structured summaries over raw action names
+    if amendment_docs:
+        for amend in amendment_docs:
+            number = amend.get("number", "")
+            label = f"Amendment {number}" if number else "Amendment"
+            lines.append(label)
+            summary = amend.get("summary", "")
+            if summary:
+                lines.append(f"  {summary}")
+            sponsors = amend.get("sponsors", "")
+            if sponsors:
+                lines.append(f"  Sponsored by: {sponsors}")
+            result = amend.get("result", "")
+            if result:
+                lines.append(f"  Result: {result}")
+            lines.append("")
+    elif analysis.amendments:
         for i, amendment in enumerate(analysis.amendments, 1):
             lines.append(
                 f"Amendment {i}: {amendment['action']} "
@@ -259,6 +275,7 @@ def summarize_council_bill_structured(
     document_summary_texts: list[str],
     legislation_data: dict[str, t.Any] | None = None,
     action_details: list[dict[str, t.Any]] | None = None,
+    amendment_docs: list[dict[str, t.Any]] | None = None,
 ) -> SummarizationResult:
     """
     Produce a 4-section structured summary for a Council Bill.
@@ -286,7 +303,9 @@ def summarize_council_bill_structured(
 
         # Section 2: Amendments and votes (programmatic)
         print("    Generating section 2: Amendments and Votes...")
-        section_2 = _format_amendments_and_votes(analysis, action_details)
+        section_2 = _format_amendments_and_votes(
+            analysis, action_details, amendment_docs
+        )
 
         # Section 3: Final text (LLM)
         print("    Generating section 3: Final Text...")

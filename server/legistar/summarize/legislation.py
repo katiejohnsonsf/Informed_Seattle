@@ -86,6 +86,7 @@ def summarize_legislation_concise_dispatch(
     document_summary_texts: list[str],
     legislation_data: dict[str, t.Any] | None = None,
     action_details: list[dict[str, t.Any]] | None = None,
+    amendment_docs: list[dict[str, t.Any]] | None = None,
 ) -> SummarizationResult:
     """Dispatch to structured summarizer for Council Bills, simple for others."""
     is_council_bill = legislation_data is not None and (
@@ -98,6 +99,7 @@ def summarize_legislation_concise_dispatch(
             document_summary_texts=document_summary_texts,
             legislation_data=legislation_data,
             action_details=action_details,
+            amendment_docs=amendment_docs,
         )
     return summarize_legislation_olmo_concise(
         title=title,

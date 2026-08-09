@@ -556,11 +556,68 @@ class LegislationSummaryManager(models.Manager):
 
             # Fetch vote details for Council Bills
             action_details = None
+            amendment_docs = None
             if "Council Bill" in legislation.type or legislation.record_no.startswith(
                 "CB "
             ):
                 print("  Fetching vote details from Legistar...")
                 action_details = _fetch_action_details_for_legislation(legislation)
+
+                # Collect amendment summaries for the AMENDMENTS AND VOTES section.
+                # Prefer AmendmentSummary records (rich LLM summaries), then fall
+                # back to DocumentSummary bodies for amendment-titled documents.
+                # Only include entries that have usable summary text; fall back to
+                # action-row formatting if nothing substantive is available.
+                import re
+
+                _bad_summary = {"", "(Please ignore: SUMMARIZATION FAILED)"}
+
+                amendment_summary_objs = list(
+                    legislation.amendment_summaries.all().order_by("amendment_number")
+                )
+                # Try AmendmentSummary records first; fall through to document
+                # summaries if none have usable content.
+                has_rich_content = False
+                if amendment_summary_objs:
+                    candidates = [
+                        {
+                            "number": s.amendment_number,
+                            "summary": s.normative_summary or s.effect_statement or "",
+                            "sponsors": ", ".join(
+                                p["name"] for p in (s.sponsors or []) if "name" in p
+                            ),
+                            "result": "Pass as Amended" if s.pass_as_amended else "",
+                        }
+                        for s in amendment_summary_objs
+                    ]
+                    good = [c for c in candidates if c["summary"] not in _bad_summary]
+                    if good:
+                        amendment_docs = good
+                        has_rich_content = True
+
+                if not has_rich_content:
+                    amend_docs = [
+                        ds
+                        for ds in document_summaries
+                        if "amendment" in ds.document.title.lower()
+                        and ds.body not in _bad_summary
+                    ]
+                    if amend_docs:
+                        amendment_docs = []
+                        for ds in amend_docs:
+                            m = re.search(
+                                r"amendment\s*(\w+)",
+                                ds.document.title,
+                                re.IGNORECASE,
+                            )
+                            amendment_docs.append(
+                                {
+                                    "number": m.group(1) if m else "",
+                                    "summary": ds.body,
+                                    "sponsors": "",
+                                    "result": "",
+                                }
+                            )
 
             # Invoke the summarizer.
             summarizer = LEGISLATION_SUMMARIZERS_BY_STYLE[style]
@@ -569,6 +626,7 @@ class LegislationSummaryManager(models.Manager):
                 document_summary_texts=document_summary_texts,
                 legislation_data=legislation.raw_crawl_data,
                 action_details=action_details,
+                amendment_docs=amendment_docs,
             )
             if isinstance(result, SummarizationSuccess):
                 summary = self.create(
