@@ -674,9 +674,11 @@ def _what_changed_from_amendments(legislation) -> str:
     """
     from django.utils.html import format_html
 
-    amendment_summaries = list(
-        legislation.amendment_summaries.all().order_by("amendment_number")
-    )
+    amendment_summaries = [
+        s
+        for s in legislation.amendment_summaries.all().order_by("amendment_number")
+        if s.normative_summary or s.effect_statement
+    ]
     if not amendment_summaries:
         return ""
 
@@ -687,12 +689,10 @@ def _what_changed_from_amendments(legislation) -> str:
         title = s.short_title or f"Amendment {s.amendment_number}"
         parts.append(format_html("<p><strong>{}</strong></p>", title))
         content = s.normative_summary or s.effect_statement
-        if content:
-            # Split on sentence boundaries for paragraph breaks
-            for sentence in content.split("  "):
-                sentence = sentence.strip()
-                if sentence:
-                    parts.append(format_html("<p>{}</p>", sentence))
+        for sentence in content.split("  "):
+            sentence = sentence.strip()
+            if sentence:
+                parts.append(format_html("<p>{}</p>", sentence))
     return "\n".join(parts)
 
 
