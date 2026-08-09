@@ -71,16 +71,20 @@ class GemmaClient:
         }
         last_response = None
         for attempt in range(3):
-            last_response = requests.post(
-                self._chat_completions_url(),
-                json=payload,
-                headers=headers,
-                timeout=300,
-            )
-            if last_response.status_code < 500:
-                break
+            try:
+                last_response = requests.post(
+                    self._chat_completions_url(),
+                    json=payload,
+                    headers=headers,
+                    timeout=300,
+                )
+                if last_response.status_code < 500:
+                    break
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+                if attempt == 2:
+                    raise
             if attempt < 2:
-                time.sleep(10 * (attempt + 1))
+                time.sleep(15 * (attempt + 1))
         last_response.raise_for_status()
         data = last_response.json()
         return data["choices"][0]["message"]["content"].strip()
