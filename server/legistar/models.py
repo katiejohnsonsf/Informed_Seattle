@@ -606,7 +606,7 @@ class LegislationSummaryManager(models.Manager):
                         amendment_docs = []
                         for ds in amend_docs:
                             m = re.search(
-                                r"amendment\s*(\w+)",
+                                r"amendment\s+(\d+)",
                                 ds.document.title,
                                 re.IGNORECASE,
                             )
