@@ -219,26 +219,19 @@ class DocumentSummaryManager(models.Manager):
 
             summarizer = SUMMARIZERS_BY_STYLE[style]
             result = summarizer(text=document.extracted_text)
-            if isinstance(result, SummarizationSuccess):
-                document_summary = self.create(
-                    document=document,
-                    style=style,
-                    body=result.body,
-                    headline=result.headline,
-                    original_text=result.original_text,
-                    chunks=result.chunks,
-                    chunk_summaries=result.chunk_summaries,
+            if not isinstance(result, SummarizationSuccess):
+                raise RuntimeError(
+                    f"Summarization failed for document {document.pk}: {getattr(result, 'message', result)}"
                 )
-            else:
-                document_summary = self.create(
-                    document=document,
-                    style=style,
-                    body="(Please ignore: SUMMARIZATION FAILED)",
-                    headline="Unable to summarize (see logs)",
-                    original_text=document.extracted_text,
-                    chunks=[],
-                    chunk_summaries=[],
-                )
+            document_summary = self.create(
+                document=document,
+                style=style,
+                body=result.body,
+                headline=result.headline,
+                original_text=result.original_text,
+                chunks=result.chunks,
+                chunk_summaries=result.chunk_summaries,
+            )
             return document_summary, True
 
 

@@ -289,26 +289,19 @@ class MeetingSummaryManager(models.Manager):
                 legislation_summary_texts=legislation_summary_texts,
                 document_summary_texts=document_summary_texts,
             )
-            if isinstance(result, SummarizationSuccess):
-                summary = self.create(
-                    meeting=meeting,
-                    style=style,
-                    body=result.body,
-                    headline=result.headline,
-                    original_text=result.original_text,
-                    chunks=result.chunks,
-                    chunk_summaries=result.chunk_summaries,
+            if not isinstance(result, SummarizationSuccess):
+                raise RuntimeError(
+                    f"Summarization failed for meeting {meeting.legistar_id}: {getattr(result, 'message', result)}"
                 )
-            else:
-                summary = self.create(
-                    meeting=meeting,
-                    style=style,
-                    body="(SUMMARIZATION FAILED)",
-                    headline="Unable to summarize (see logs)",
-                    original_text=result.original_text,
-                    chunks=[],
-                    chunk_summaries=[],
-                )
+            summary = self.create(
+                meeting=meeting,
+                style=style,
+                body=result.body,
+                headline=result.headline,
+                original_text=result.original_text,
+                chunks=result.chunks,
+                chunk_summaries=result.chunk_summaries,
+            )
             return summary, True
 
 
@@ -628,26 +621,19 @@ class LegislationSummaryManager(models.Manager):
                 action_details=action_details,
                 amendment_docs=amendment_docs,
             )
-            if isinstance(result, SummarizationSuccess):
-                summary = self.create(
-                    legislation=legislation,
-                    style=style,
-                    body=result.body,
-                    headline=result.headline,
-                    original_text=result.original_text,
-                    chunks=result.chunks,
-                    chunk_summaries=result.chunk_summaries,
+            if not isinstance(result, SummarizationSuccess):
+                raise RuntimeError(
+                    f"Summarization failed for {legislation.record_no}: {getattr(result, 'message', result)}"
                 )
-            else:
-                summary = self.create(
-                    legislation=legislation,
-                    style=style,
-                    body="(SUMMARIZATION FAILED)",
-                    headline="Unable to summarize (see logs)",
-                    original_text=result.original_text,
-                    chunks=[],
-                    chunk_summaries=[],
-                )
+            summary = self.create(
+                legislation=legislation,
+                style=style,
+                body=result.body,
+                headline=result.headline,
+                original_text=result.original_text,
+                chunks=result.chunks,
+                chunk_summaries=result.chunk_summaries,
+            )
             return summary, True
 
 
