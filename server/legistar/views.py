@@ -22,6 +22,10 @@ from .models import (
 )
 
 _SUMMARY_PENDING = "Summary pending\u2026"
+_SUMMARY_PENDING_BODY = (
+    "The AI summarization service is currently experiencing an outage. "
+    "Please check back in a few hours for this week's updated summaries."
+)
 _COUNCIL_BILL_KIND = "Council Bill"
 _PAGE_SIZE = 25
 
@@ -633,7 +637,7 @@ def _meeting_context(meeting: Meeting, style: SummarizationStyle) -> dict:
             "summary_pending": True,
             "headline": _SUMMARY_PENDING,
             "truncated_headline": _SUMMARY_PENDING,
-            "summary": _text_to_html_paragraphs("Summaries are being generated."),
+            "summary": _text_to_html_paragraphs(_SUMMARY_PENDING_BODY),
             "legislation_table_contexts": legislation_table_contexts,
         }
 
@@ -768,7 +772,7 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
     headline = (
         _remove_surrounding_quotes(summary.headline) if summary else _SUMMARY_PENDING
     )
-    body = summary.body if summary else "This summary is being generated."
+    body = summary.body if summary else _SUMMARY_PENDING_BODY
 
     # Fetch evaluation scores for indicator dots (if available)
     from server.legistar.models import SummaryEvaluation
