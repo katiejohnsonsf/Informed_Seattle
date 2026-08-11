@@ -1133,10 +1133,6 @@ def calendar(request, style: str):
             # Only show Council Bills; other types are still summarized but hidden
             if not _is_council_bill(legislation):
                 continue
-            if not LegislationSummary.objects.filter(
-                legislation=legislation, style=style
-            ).exists():
-                continue
             leg_context = _legislation_context(legislation, style)
             kind = leg_context["kind"]
             leg_context["summary"] = leg_context["summary"].replace("*", "")
