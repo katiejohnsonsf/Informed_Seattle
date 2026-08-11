@@ -339,7 +339,6 @@ def main():
         clear_failed_amendment_document_summaries()
         summarize_all_documents()
         clear_failed_summaries()
-        clear_council_bill_summaries()
         summarize_all_legislation()
         summarize_all_meetings()
 
