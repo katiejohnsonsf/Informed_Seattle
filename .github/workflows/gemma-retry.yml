@@ -1,0 +1,108 @@
+name: Retry Pending Summaries
+
+# Runs every 3 hours. If Gemma is up and there are unsummarized items,
+# runs the summarization pipeline and pushes the updated DB, which
+# triggers the deploy-to-pages workflow automatically.
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up conda environment
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment.yml
+          environment-name: learn_connect
+          cache-environment: true
+
+      - name: Create .env file from secrets
+        run: |
+          cat > .env <<EOF
+          DEBUG=NO
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          SUMMARIZATION_BACKEND=gemma
+          GEMMA_API_KEY=${{ secrets.GEMMA_API_KEY }}
+          GEMMA_API_URL=https://llmaven-prod-litellm-prod.lemonmoss-19296c81.westus2.azurecontainerapps.io/v1
+          GEMMA_MODEL_NAME=gemma-4-31b
+          EOF
+
+      - name: Run database migrations
+        shell: micromamba-shell {0}
+        run: python manage.py migrate --run-syncdb
+
+      - name: Check for pending summaries and Gemma health
+        id: check
+        shell: micromamba-shell {0}
+        run: |
+          python - <<'PYEOF'
+          import os, sys, django
+          os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
+          django.setup()
+
+          from server.legistar.models import LegislationSummary, Legislation, MeetingSummary
+          from django.db.models import Q
+
+          # Count pending legislation summaries for recent CBs
+          recent_ids = list(
+              Legislation.objects.filter(
+                  Q(type__icontains='Council Bill') | Q(record_no__startswith='CB ')
+              ).order_by('-id')[:40].values_list('id', flat=True)
+          )
+          pending = Legislation.objects.filter(id__in=recent_ids).exclude(
+              id__in=LegislationSummary.objects.values_list('legislation_id', flat=True)
+          ).count()
+
+          if pending == 0:
+              print('No pending summaries — skipping')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write('should_run=false\n')
+              sys.exit(0)
+
+          print(f'{pending} pending legislation summaries found — testing Gemma...')
+
+          from server.lib.gemma_client import get_gemma_client
+          try:
+              get_gemma_client().generate('Respond with one word: ready', temperature=0.1)
+              print('Gemma is up')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write('should_run=true\n')
+          except Exception as e:
+              print(f'Gemma is still down: {e}')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write('should_run=false\n')
+          PYEOF
+
+      - name: Run summarization pipeline
+        if: steps.check.outputs.should_run == 'true'
+        shell: micromamba-shell {0}
+        run: |
+          python setup_summaries.py
+          python manage.py generate_amendment_summaries --limit 40
+
+      - name: Commit and push updated database
+        if: steps.check.outputs.should_run == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/db.sqlite3
+          if git diff --staged --quiet; then
+            echo "No database changes to commit"
+          else
+            git commit -m "fix: summaries recovered after Gemma outage ($(date +'%Y-%m-%d %H:%M UTC'))"
+            git pull --rebase origin main
+            git push
+          fi
