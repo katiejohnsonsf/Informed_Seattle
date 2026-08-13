@@ -62,12 +62,24 @@ jobs:
                   Q(type__icontains='Council Bill') | Q(record_no__startswith='CB ')
               ).order_by('-id')[:40].values_list('id', flat=True)
           )
-          pending = Legislation.objects.filter(id__in=recent_ids).exclude(
+          pending_leg = Legislation.objects.filter(id__in=recent_ids).exclude(
               id__in=LegislationSummary.objects.values_list('legislation_id', flat=True)
           ).count()
 
+          # Also count documents for recent CBs that have no summary yet
+          from server.documents.models import Document, DocumentSummary
+          from django.db.models import Subquery, OuterRef
+          recent_docs = Document.objects.filter(
+              legislations__id__in=recent_ids
+          ).exclude(extracted_text='').distinct()
+          pending_docs = recent_docs.exclude(
+              id__in=DocumentSummary.objects.values_list('document_id', flat=True)
+          ).count()
+
+          pending = pending_leg + pending_docs
+
           if pending == 0:
-              print('No pending summaries — skipping')
+              print('No pending summaries or documents — skipping')
               with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
                   f.write('should_run=false\n')
               sys.exit(0)
