@@ -101,9 +101,7 @@ jobs:
       - name: Run summarization pipeline
         if: steps.check.outputs.should_run == 'true'
         shell: micromamba-shell {0}
-        run: |
-          python setup_summaries.py
-          python manage.py generate_amendment_summaries --limit 40
+        run: python setup_summaries.py
 
       - name: Commit and push updated database
         if: steps.check.outputs.should_run == 'true'
