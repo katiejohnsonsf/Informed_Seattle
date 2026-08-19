@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "updated_at": "2026-08-17",
+  "prompts": {
+    "original_proposal": {
+      "template": "Summarize in 2-3 sentences what this Seattle City Council bill originally proposed:\n\nTitle: {title}\n\nBill text (excerpt):\n{text_excerpt}\n\nWhat was originally proposed:",
+      "max_new_tokens": 200,
+      "temperature": 0.3
+    },
+    "final_text": {
+      "template": "Summarize in 3-4 sentences what this Seattle City Council bill does in its current form:\n\n{context}\n\nWhat the legislation does:",
+      "max_new_tokens": 300,
+      "temperature": 0.3
+    },
+    "differences": {
+      "template": "This Seattle City Council bill was amended. Summarize in 2-3 sentences how the final version differs from the original:\n\nTitle: {title}\nOriginal proposal excerpt: {original_excerpt}\nAmendments made: {amendments_text}\nFinal text excerpt: {final_excerpt}\n\nKey differences from the original:",
+      "max_new_tokens": 200,
+      "temperature": 0.3
+    },
+    "headline": {
+      "template": "Create a concise headline (under 15 words) for: {title}\nHeadline:",
+      "max_new_tokens": 30,
+      "temperature": 0.3
+    },
+    "simple_summary": {
+      "template": "Summarize this Seattle City Council legislation:\n\n{context}\n\nProvide a comprehensive summary that explains what this legislation does.",
+      "max_new_tokens": 512,
+      "temperature": 0.3
+    }
+  }
+}

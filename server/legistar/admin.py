@@ -9,7 +9,14 @@ from server.documents.admin import NonrelatedDocumentTabularInline
 from server.lib.admin import NoPermissionAdminMixin
 from server.lib.truncate import truncate_str
 
-from .models import Legislation, LegislationSummary, Meeting, MeetingSummary
+from .models import (
+    Legislation,
+    LegislationSummary,
+    Meeting,
+    MeetingSummary,
+    SummaryCorrection,
+    SummaryEvaluation,
+)
 
 
 class NonrelatedLegislationTabularInline(
@@ -187,13 +194,106 @@ class LegislationAdmin(NoPermissionAdminMixin, admin.ModelAdmin):
     link.allow_tags = True
 
 
+class SummaryCorrectionInline(admin.TabularInline):
+    model = SummaryCorrection
+    fields = ("dimension", "issue", "correction", "synthesized")
+    readonly_fields = ("synthesized",)
+    extra = 1
+    verbose_name = "Add correction"
+    verbose_name_plural = "Corrections (flag issues to improve future summaries)"
+
+
 class LegislationSummaryAdmin(NoPermissionAdminMixin, admin.ModelAdmin):
-    list_display = ("created_at", "legislation", "style", "headline", "body")
+    list_display = ("created_at", "legislation", "style", "headline", "correction_count")
     fields = ("created_at", "legislation", "style", "headline", "body")
     readonly_fields = fields
+    inlines = (SummaryCorrectionInline,)
+
+    def correction_count(self, obj):
+        n = obj.corrections.count()
+        return n if n else ""
+
+    correction_count.short_description = "Corrections"
+
+
+class SummaryCorrectionAdmin(admin.ModelAdmin):
+    list_display = (
+        "created_at",
+        "legislation_record_no",
+        "dimension",
+        "issue_preview",
+        "synthesized",
+    )
+    list_filter = ("synthesized", "dimension")
+    readonly_fields = (
+        "created_at",
+        "synthesized",
+        "legislation_summary",
+        "summary_preview",
+    )
+    fields = (
+        "created_at",
+        "legislation_summary",
+        "summary_preview",
+        "dimension",
+        "issue",
+        "correction",
+        "synthesized",
+    )
+    ordering = ("-created_at",)
+
+    def legislation_record_no(self, obj):
+        return obj.legislation_summary.legislation.record_no
+
+    legislation_record_no.short_description = "Bill"
+
+    def issue_preview(self, obj):
+        return truncate_str(obj.issue, 80)
+
+    issue_preview.short_description = "Issue"
+
+    def summary_preview(self, obj):
+        body = obj.legislation_summary.body or ""
+        clean = mark_safe(
+            "<pre style='white-space:pre-wrap;max-height:300px;overflow-y:auto'>"
+            + body[:2000]
+            + ("…" if len(body) > 2000 else "")
+            + "</pre>"
+        )
+        return clean
+
+    summary_preview.short_description = "Summary (read-only)"
+
+
+class SummaryEvaluationAdmin(NoPermissionAdminMixin, admin.ModelAdmin):
+    list_display = (
+        "legislation_record_no",
+        "overall_completeness",
+        "overall_faithfulness",
+        "claude_model",
+        "created_at",
+    )
+    readonly_fields = (
+        "legislation_summary",
+        "scores",
+        "overall_completeness",
+        "overall_faithfulness",
+        "claude_model",
+        "created_at",
+        "updated_at",
+    )
+    fields = readonly_fields
+    ordering = ("-created_at",)
+
+    def legislation_record_no(self, obj):
+        return obj.legislation_summary.legislation.record_no
+
+    legislation_record_no.short_description = "Bill"
 
 
 admin_site.register(Meeting, MeetingAdmin)
 admin_site.register(Legislation, LegislationAdmin)
 admin_site.register(MeetingSummary, MeetingSummaryAdmin)
 admin_site.register(LegislationSummary, LegislationSummaryAdmin)
+admin_site.register(SummaryCorrection, SummaryCorrectionAdmin)
+admin_site.register(SummaryEvaluation, SummaryEvaluationAdmin)

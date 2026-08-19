@@ -20,6 +20,18 @@ from server.documents.summarize import (
 )
 
 
+def _get_prompt_template(key: str, default: str) -> str:
+    """Return the prompt template from prompts.json if present, else the default."""
+    try:
+        from server.alignment.rubric import get_prompt
+        cfg = get_prompt(key)
+        if cfg and cfg.get("template"):
+            return cfg["template"]
+    except Exception:
+        pass
+    return default
+
+
 @dataclass
 class LegislationAnalysis:
     """Comprehensive analysis of a piece of legislation."""
@@ -134,18 +146,17 @@ def analyze_legislation_history(
 # ---------------------------------------------------------------------
 
 
+_DEFAULT_ORIGINAL_PROPOSAL = (
+    "Summarize in 2-3 sentences what this Seattle City Council bill originally proposed:\n\n"
+    "Title: {title}\n\nBill text (excerpt):\n{text_excerpt}\n\nWhat was originally proposed:"
+)
+
+
 def _summarize_original_proposal(olmo, title: str, full_text: str) -> str:
     """Summarize what was originally proposed (LLM call)."""
     text_excerpt = full_text[:1500] if full_text else title
-    prompt = f"""Summarize in 2-3 sentences what this \
-Seattle City Council bill originally proposed:
-
-Title: {title}
-
-Bill text (excerpt):
-{text_excerpt}
-
-What was originally proposed:"""
+    template = _get_prompt_template("original_proposal", _DEFAULT_ORIGINAL_PROPOSAL)
+    prompt = template.format(title=title, text_excerpt=text_excerpt)
     return olmo.generate(prompt, max_new_tokens=200, temperature=0.3)
 
 
@@ -219,6 +230,12 @@ def _format_amendments_and_votes(
     return "\n".join(lines)
 
 
+_DEFAULT_FINAL_TEXT = (
+    "Summarize in 3-4 sentences what this Seattle City Council bill does in its current form:\n\n"
+    "{context}\n\nWhat the legislation does:"
+)
+
+
 def _summarize_final_text(
     olmo, title: str, full_text: str, doc_summaries: list[str]
 ) -> str:
@@ -231,18 +248,24 @@ def _summarize_final_text(
     if full_text:
         context += f"\n\nBill text (excerpt):\n{full_text[:1200]}"
 
-    prompt = f"""Summarize in 3-4 sentences what this \
-Seattle City Council bill does in its current form:
-
-{context}
-
-What the legislation does:"""
+    template = _get_prompt_template("final_text", _DEFAULT_FINAL_TEXT)
+    prompt = template.format(context=context)
     return olmo.generate(prompt, max_new_tokens=300, temperature=0.3)
 
 
+_DEFAULT_DIFFERENCES = (
+    "This Seattle City Council bill was amended. Summarize in 2-3 sentences "
+    "how the final version differs from the original:\n\n"
+    "Title: {title}\n"
+    "Original proposal excerpt: {original_excerpt}\n"
+    "Amendments made: {amendments_text}\n"
+    "Final text excerpt: {final_excerpt}\n\n"
+    "Key differences from the original:"
+)
+
+
 def _summarize_differences(olmo, title: str, analysis: LegislationAnalysis) -> str:
-    """Summarize differences between original and final
-    (LLM call only if amendments exist)."""
+    """Summarize differences between original and final (LLM call only if amendments exist)."""
     if not analysis.amendments:
         return (
             "No amendments have been made. The current text is the same"
@@ -253,15 +276,13 @@ def _summarize_differences(olmo, title: str, analysis: LegislationAnalysis) -> s
         f"- {a['action']} by {a['action_by']} ({a['date']})"
         for a in analysis.amendments
     )
-    prompt = f"""This Seattle City Council bill was amended. Summarize \
-in 2-3 sentences how the final version differs from the original:
-
-Title: {title}
-Original proposal excerpt: {analysis.original_proposal[:800]}
-Amendments made: {amendments_text}
-Final text excerpt: {(analysis.final_text or "")[:800]}
-
-Key differences from the original:"""
+    template = _get_prompt_template("differences", _DEFAULT_DIFFERENCES)
+    prompt = template.format(
+        title=title,
+        original_excerpt=analysis.original_proposal[:800],
+        amendments_text=amendments_text,
+        final_excerpt=(analysis.final_text or "")[:800],
+    )
     return olmo.generate(prompt, max_new_tokens=200, temperature=0.3)
 
 
@@ -327,9 +348,9 @@ def summarize_council_bill_structured(
 
         # Headline (short LLM call)
         print("    Generating headline...")
-        headline_prompt = (
-            f"Create a concise headline (under 15 words) for: {title}\nHeadline:"
-        )
+        _default_headline = "Create a concise headline (under 15 words) for: {title}\nHeadline:"
+        headline_template = _get_prompt_template("headline", _default_headline)
+        headline_prompt = headline_template.format(title=title)
         headline = olmo.generate(headline_prompt, max_new_tokens=30, temperature=0.3)
 
         context_text = (
@@ -380,17 +401,23 @@ def summarize_legislation_olmo_concise(
             f"{i}. {summary}" for i, summary in enumerate(document_summary_texts, 1)
         )
 
-        prompt = f"""Summarize this Seattle City Council legislation:
-
-{context}
-
-Provide a comprehensive summary that explains what this legislation does."""
+        _default_simple = (
+            "Summarize this Seattle City Council legislation:\n\n{context}\n\n"
+            "Provide a comprehensive summary that explains what this legislation does."
+        )
+        _default_simple_headline = "Create a brief headline (under 15 words) for: {title}"
 
         olmo = get_olmo_client()
-        body = olmo.generate(prompt, max_new_tokens=512, temperature=0.3)
-
-        headline_prompt = f"Create a brief headline (under 15 words) for: {title}"
-        headline = olmo.generate(headline_prompt, max_new_tokens=30, temperature=0.3)
+        body = olmo.generate(
+            _get_prompt_template("simple_summary", _default_simple).format(context=context),
+            max_new_tokens=512,
+            temperature=0.3,
+        )
+        headline = olmo.generate(
+            _get_prompt_template("headline", _default_simple_headline).format(title=title),
+            max_new_tokens=30,
+            temperature=0.3,
+        )
 
         return SummarizationSuccess(
             original_text=context,

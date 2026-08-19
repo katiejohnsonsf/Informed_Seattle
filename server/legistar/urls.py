@@ -1,6 +1,7 @@
+from django.urls import path
 from django_distill import distill_path
 
-from . import views
+from . import views, views_review
 
 app_name = "legistar"
 urlpatterns = [
@@ -54,4 +55,7 @@ urlpatterns = [
         distill_func=views.distill_evaluations,
         distill_file="evaluations/index.html",
     ),
+    # Staff-only review UI — excluded from the static distill build
+    path("review/", views_review.review_index, name="review_index"),
+    path("review/<int:pk>/", views_review.review_summary, name="review_summary"),
 ]

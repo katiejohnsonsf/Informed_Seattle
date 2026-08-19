@@ -127,7 +127,7 @@ def summarize_all_documents():
                 if created:
                     print(f"  ✓ {summary.headline[:60]}...")
                 else:
-                    print(f"  ↻ Using existing summary")
+                    print("  ↻ Using existing summary")
             except Exception as e:
                 print(f"  ✗ Error: {e}")
 
@@ -216,61 +216,57 @@ def clear_council_bill_summaries():
     print()
 
 
+def _summarize_one_legislation(legislation, style, i, total):
+    """Attempt to summarize a single Council Bill. Returns True if processed."""
+    if LegislationSummary.objects.filter(legislation=legislation, style=style).exists():
+        print(f"[{i}/{total}] {legislation.record_no}: (already summarized)")
+        return False
+
+    doc_count = legislation.documents.count()
+    summarized_doc_count = DocumentSummary.objects.filter(
+        document__in=legislation.documents.all(), style=style
+    ).count()
+    if doc_count > 0 and summarized_doc_count < doc_count:
+        print(
+            f"[{i}/{total}] {legislation.record_no}: "
+            f"⚠ Missing document summaries ({summarized_doc_count}/{doc_count})"
+        )
+        return False
+
+    try:
+        print(f"[{i}/{total}] Summarizing: {legislation.record_no}...")
+        summary, created = LegislationSummary.manager.get_or_create_from_legislation(
+            legislation, style
+        )
+        if created:
+            print(f"  ✓ {summary.headline[:60]}...")
+        else:
+            print("  ↻ Using existing summary")
+    except Exception as e:
+        print(f"  ✗ Error: {e}")
+    return True
+
+
 def summarize_all_legislation():
-    """Summarize all legislation."""
+    """Summarize the N most recent Council Bills."""
     print("=" * 80)
-    print("STEP 3: Summarizing legislation")
+    print("STEP 3: Summarizing Council Bills")
     print("=" * 80)
 
-    # For council bills, restrict to the N most recent; always include other types.
     recent_cb_ids = _recent_council_bill_ids()
-    # "is a council bill" = type contains 'Council Bill' OR record_no starts with 'CB '
-    _is_cb = Q(type__icontains=_COUNCIL_BILL_KIND) | Q(record_no__startswith="CB ")
-    legislations = Legislation.objects.filter(Q(id__in=recent_cb_ids) | ~_is_cb)
+    legislations = Legislation.objects.filter(id__in=recent_cb_ids)
     total = legislations.count()
 
     if total == 0:
-        print("⚠ No legislation found")
+        print("⚠ No Council Bills found")
         return
 
-    print(f"Found {total} pieces of legislation")
+    print(f"Found {total} Council Bills")
 
     for style in SUMMARIZATION_STYLES:
         print(f"\nUsing style: {style}")
         for i, legislation in enumerate(legislations, 1):
-            # Skip if already summarized
-            if LegislationSummary.objects.filter(
-                legislation=legislation, style=style
-            ).exists():
-                print(f"[{i}/{total}] {legislation.record_no}: (already summarized)")
-                continue
-
-            # Check if all documents are summarized
-            doc_count = legislation.documents.count()
-            summarized_doc_count = DocumentSummary.objects.filter(
-                document__in=legislation.documents.all(), style=style
-            ).count()
-
-            if doc_count > 0 and summarized_doc_count < doc_count:
-                print(
-                    f"[{i}/{total}] {legislation.record_no}: ⚠ Missing document summaries ({summarized_doc_count}/{doc_count})"
-                )
-                continue
-
-            try:
-                print(f"[{i}/{total}] Summarizing: {legislation.record_no}...")
-                (
-                    summary,
-                    created,
-                ) = LegislationSummary.manager.get_or_create_from_legislation(
-                    legislation, style
-                )
-                if created:
-                    print(f"  ✓ {summary.headline[:60]}...")
-                else:
-                    print(f"  ↻ Using existing summary")
-            except Exception as e:
-                print(f"  ✗ Error: {e}")
+            _summarize_one_legislation(legislation, style, i, total)
 
     print()
 
@@ -340,19 +336,28 @@ def main():
         summarize_all_documents()
         clear_failed_summaries()
         summarize_all_legislation()
-        summarize_all_meetings()
+
+        recent_cb_ids = _recent_council_bill_ids()
+        cb_docs = (
+            Document.objects.filter(legislations__id__in=recent_cb_ids)
+            .exclude(extracted_text="")
+            .distinct()
+        )
+        cb_doc_summaries = DocumentSummary.objects.filter(
+            document__in=cb_docs
+        ).count()
+        cb_summaries = LegislationSummary.objects.filter(
+            legislation_id__in=recent_cb_ids
+        ).count()
 
         print("=" * 80)
         print("✓ PIPELINE COMPLETE")
         print("=" * 80)
-        print("\nSummary:")
-        print(f"  Documents: {Document.objects.count()}")
-        print(f"  Document Summaries: {DocumentSummary.objects.count()}")
-        print(f"  Legislation: {Legislation.objects.count()}")
-        print(f"  Legislation Summaries: {LegislationSummary.objects.count()}")
-        print(f"  Meetings: {Meeting.objects.filter(time__isnull=False).count()}")
-        print(f"  Meeting Summaries: {MeetingSummary.objects.count()}")
-        print("\nYou can now run: poetry run python manage.py runserver")
+        print(f"\nCouncil Bills (last {_COUNCIL_BILL_LIMIT}):")
+        print(f"  CB documents:         {cb_docs.count()}")
+        print(f"  CB document summaries:{cb_doc_summaries}")
+        print(f"  CB summaries:         {cb_summaries}/{len(recent_cb_ids)}")
+        print("\nYou can now run: python manage.py runserver")
         print("And visit: http://127.0.0.1:8000/calendar/concise/")
         print()
 

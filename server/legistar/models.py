@@ -801,6 +801,56 @@ class SummaryEvaluation(models.Model):
         )
 
 
+class SummaryCorrection(models.Model):
+    """
+    Human correction of an OLMo-generated LegislationSummary.
+
+    Reviewers record what is wrong (issue) and optionally what it should
+    say (correction). The synthesize_rules management command clusters
+    these by dimension and asks Claude to derive new rubric rules, then
+    marks each correction synthesized=True.
+    """
+
+    DIMENSIONS = [
+        ("headline_accuracy", "Headline Accuracy"),
+        ("proposed_intent_fidelity", "Proposed Intent Fidelity"),
+        ("final_text_fidelity", "Final Text Fidelity"),
+        ("amendment_accuracy", "Amendment Accuracy"),
+        ("accessibility", "Accessibility"),
+        ("neutrality", "Neutrality"),
+    ]
+
+    legislation_summary = models.ForeignKey(
+        LegislationSummary,
+        on_delete=models.CASCADE,
+        related_name="corrections",
+    )
+    dimension = models.CharField(max_length=50, choices=DIMENSIONS)
+    issue = models.TextField(
+        help_text="What is wrong with this aspect of the summary?"
+    )
+    correction = models.TextField(
+        blank=True,
+        help_text="What should it say instead? (leave blank to just flag the issue)",
+    )
+    synthesized = models.BooleanField(
+        default=False,
+        help_text="Has this been picked up by the rule synthesizer?",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Summary correction"
+        verbose_name_plural = "Summary corrections"
+
+    def __str__(self):
+        return (
+            f"Correction [{self.get_dimension_display()}] — "
+            f"{self.legislation_summary.legislation.record_no}"
+        )
+
+
 class CrawlMetadata(models.Model):
     """
     Singleton model that tracks when the last crawl happened.

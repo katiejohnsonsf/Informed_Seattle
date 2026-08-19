@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "updated_at": "2026-08-17",
+  "dimensions": {
+    "headline_accuracy": {
+      "description": "Does the headline faithfully represent the bill's core change? Is it accurate and not misleading?",
+      "rules": []
+    },
+    "proposed_intent_fidelity": {
+      "description": "Does the 'What Was Originally Proposed' section accurately reflect the introduced bill text? Are important details present?",
+      "rules": []
+    },
+    "final_text_fidelity": {
+      "description": "Does the 'What The Final Text Does' section match the enacted or amended legislative language? Is it accurate to the final version?",
+      "rules": []
+    },
+    "amendment_accuracy": {
+      "description": "Are amendments described accurately? Is the vote breakdown per council member correct and complete? Are any amendments or votes omitted or mischaracterized?",
+      "rules": []
+    },
+    "accessibility": {
+      "description": "Is the language plain enough for a non-lawyer Seattle resident? Are technical terms explained? Is the structure easy to follow?",
+      "rules": []
+    },
+    "neutrality": {
+      "description": "Is the summary free of editorial framing or political spin? Does it present the legislation's content without advocacy or bias?",
+      "rules": []
+    }
+  }
+}

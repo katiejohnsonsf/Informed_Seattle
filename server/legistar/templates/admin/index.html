@@ -1,0 +1,28 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<div style="
+  background: #1a1a2e;
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+">
+  <a href="/review/" style="
+    background: #4f8ef7;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 7px 16px;
+    border-radius: 5px;
+    white-space: nowrap;
+  ">→ Review Summaries</a>
+  <span style="color: #94a3b8; font-size: 13px;">
+    Flag inaccuracies to improve future AI-generated bill summaries
+  </span>
+</div>
+{{ block.super }}
+{% endblock %}
