@@ -24,14 +24,6 @@
           rel="stylesheet">
     <script src="{% static 'site.js' %}"></script>
     {% block extra_head %}{% endblock extra_head %}
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8PH2BSWVS7"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-8PH2BSWVS7');
-    </script>
   </head>
   <body>
     {% block summarization-style-form %}
