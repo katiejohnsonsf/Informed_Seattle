@@ -204,7 +204,13 @@ class SummaryCorrectionInline(admin.TabularInline):
 
 
 class LegislationSummaryAdmin(NoPermissionAdminMixin, admin.ModelAdmin):
-    list_display = ("created_at", "legislation", "style", "headline", "correction_count")
+    list_display = (
+        "created_at",
+        "legislation",
+        "style",
+        "headline",
+        "correction_count",
+    )
     fields = ("created_at", "legislation", "style", "headline", "body")
     readonly_fields = fields
     inlines = (SummaryCorrectionInline,)

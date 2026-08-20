@@ -24,6 +24,7 @@ def _get_prompt_template(key: str, default: str) -> str:
     """Return the prompt template from prompts.json if present, else the default."""
     try:
         from server.alignment.rubric import get_prompt
+
         cfg = get_prompt(key)
         if cfg and cfg.get("template"):
             return cfg["template"]
@@ -348,7 +349,9 @@ def summarize_council_bill_structured(
 
         # Headline (short LLM call)
         print("    Generating headline...")
-        _default_headline = "Create a concise headline (under 15 words) for: {title}\nHeadline:"
+        _default_headline = (
+            "Create a concise headline (under 15 words) for: {title}\nHeadline:"
+        )
         headline_template = _get_prompt_template("headline", _default_headline)
         headline_prompt = headline_template.format(title=title)
         headline = olmo.generate(headline_prompt, max_new_tokens=30, temperature=0.3)
@@ -405,16 +408,22 @@ def summarize_legislation_olmo_concise(
             "Summarize this Seattle City Council legislation:\n\n{context}\n\n"
             "Provide a comprehensive summary that explains what this legislation does."
         )
-        _default_simple_headline = "Create a brief headline (under 15 words) for: {title}"
+        _default_simple_headline = (
+            "Create a brief headline (under 15 words) for: {title}"
+        )
 
         olmo = get_olmo_client()
         body = olmo.generate(
-            _get_prompt_template("simple_summary", _default_simple).format(context=context),
+            _get_prompt_template("simple_summary", _default_simple).format(
+                context=context
+            ),
             max_new_tokens=512,
             temperature=0.3,
         )
         headline = olmo.generate(
-            _get_prompt_template("headline", _default_simple_headline).format(title=title),
+            _get_prompt_template("headline", _default_simple_headline).format(
+                title=title
+            ),
             max_new_tokens=30,
             temperature=0.3,
         )

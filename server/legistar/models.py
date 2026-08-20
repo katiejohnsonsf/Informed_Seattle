@@ -826,9 +826,7 @@ class SummaryCorrection(models.Model):
         related_name="corrections",
     )
     dimension = models.CharField(max_length=50, choices=DIMENSIONS)
-    issue = models.TextField(
-        help_text="What is wrong with this aspect of the summary?"
-    )
+    issue = models.TextField(help_text="What is wrong with this aspect of the summary?")
     correction = models.TextField(
         blank=True,
         help_text="What should it say instead? (leave blank to just flag the issue)",

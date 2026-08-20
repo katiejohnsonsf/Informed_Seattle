@@ -57,9 +57,7 @@ def synthesize(
             for c in dim_corrections
         )
 
-        existing_rules = (
-            rubric.get("dimensions", {}).get(dim, {}).get("rules", [])
-        )
+        existing_rules = rubric.get("dimensions", {}).get(dim, {}).get("rules", [])
         existing_text = (
             "\n".join(f"- {r}" for r in existing_rules)
             if existing_rules
@@ -91,7 +89,9 @@ def synthesize(
             start = raw.find("[")
             end = raw.rfind("]") + 1
             if start == -1 or end == 0:
-                print(f"    [warn] Could not parse rule array for {dim}", file=sys.stderr)
+                print(
+                    f"    [warn] Could not parse rule array for {dim}", file=sys.stderr
+                )
                 continue
             new_rules: list[str] = json.loads(raw[start:end])
             new_rules_by_dim[dim] = new_rules

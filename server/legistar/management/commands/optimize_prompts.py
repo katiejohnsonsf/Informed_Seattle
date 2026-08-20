@@ -77,4 +77,6 @@ class Command(BaseCommand):
         if dry_run:
             self.stderr.write(f"[dry-run] Would update {len(improved)} prompt(s).")
         else:
-            self.stderr.write(f"Done. Updated {len(improved)} prompt(s): {list(improved)}")
+            self.stderr.write(
+                f"Done. Updated {len(improved)} prompt(s): {list(improved)}"
+            )

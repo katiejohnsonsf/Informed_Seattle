@@ -76,4 +76,6 @@ class Command(BaseCommand):
         if dry_run:
             self.stderr.write(f"[dry-run] Would add {total_rules} rule(s).")
         else:
-            self.stderr.write(f"Done. Added {total_rules} new rule(s) across {len(new_rules)} dimension(s).")
+            self.stderr.write(
+                f"Done. Added {total_rules} new rule(s) across {len(new_rules)} dimension(s)."
+            )

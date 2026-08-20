@@ -77,8 +77,7 @@ class LegislationSummarizerCallable(t.Protocol):
         document_summary_texts: list[str],
         legislation_data: dict[str, t.Any] | None = ...,
         action_details: list[dict[str, t.Any]] | None = ...,
-    ) -> SummarizationResult:
-        ...
+    ) -> SummarizationResult: ...
 
 
 def summarize_legislation_concise_dispatch(

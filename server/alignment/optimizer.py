@@ -26,7 +26,11 @@ _KEY_TO_DIMS: dict[str, list[str]] = {
     "final_text": ["final_text_fidelity"],
     "differences": ["amendment_accuracy"],
     "headline": ["headline_accuracy"],
-    "simple_summary": ["proposed_intent_fidelity", "final_text_fidelity", "accessibility"],
+    "simple_summary": [
+        "proposed_intent_fidelity",
+        "final_text_fidelity",
+        "accessibility",
+    ],
 }
 
 ALL_PROMPT_KEYS = list(_KEY_TO_DIMS)
@@ -45,7 +49,9 @@ def _optimize_one(
         "\n".join(f"- {r}" for r in rubric_rules) if rubric_rules else "(none yet)"
     )
     issues_text = (
-        "\n".join(f"- {i}" for i in example_issues) if example_issues else "(none reported)"
+        "\n".join(f"- {i}" for i in example_issues)
+        if example_issues
+        else "(none reported)"
     )
 
     meta_prompt = (
@@ -131,7 +137,10 @@ def run_optimization(
             )
             continue
 
-        print(f"  [optimize] {key} ({len(rubric_rules)} rules, {len(issues)} issues)", file=sys.stderr)
+        print(
+            f"  [optimize] {key} ({len(rubric_rules)} rules, {len(issues)} issues)",
+            file=sys.stderr,
+        )
         new_template = _optimize_one(
             client, model, key, current_template, rubric_rules, issues[:10]
         )

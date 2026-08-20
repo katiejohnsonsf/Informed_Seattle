@@ -212,9 +212,10 @@ def _process_legislation(legislation, force: bool, olmo) -> None:
     for doc in amendment_docs:
         if (
             not force
-            and AmendmentSummary.objects.filter(
-                legislation=legislation, document=doc
-            ).exclude(normative_summary="").exclude(normative_summary__isnull=True).exists()
+            and AmendmentSummary.objects.filter(legislation=legislation, document=doc)
+            .exclude(normative_summary="")
+            .exclude(normative_summary__isnull=True)
+            .exists()
         ):
             print(
                 f"  [skip] Amendment already summarized: {doc.title}",
