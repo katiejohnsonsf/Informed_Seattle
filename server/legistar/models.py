@@ -616,12 +616,12 @@ class LegislationSummaryManager(models.Manager):
 
             # Invoke the summarizer.
             summarizer = LEGISLATION_SUMMARIZERS_BY_STYLE[style]
-            result = summarizer(  # type: ignore[call-arg]
+            result = summarizer(
                 legislation.title,
                 document_summary_texts=document_summary_texts,
                 legislation_data=legislation.raw_crawl_data,
                 action_details=action_details,
-                amendment_docs=amendment_docs,
+                amendment_docs=amendment_docs,  # type: ignore[call-arg]
             )
             if not isinstance(result, SummarizationSuccess):
                 raise RuntimeError(
