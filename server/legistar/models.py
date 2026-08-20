@@ -566,8 +566,9 @@ class LegislationSummaryManager(models.Manager):
 
                 _bad_summary = {"", "(Please ignore: SUMMARIZATION FAILED)"}
 
+                qs_amend = legislation.amendment_summaries  # type: ignore[attr-defined]
                 amendment_summary_objs = list(
-                    legislation.amendment_summaries.all().order_by("amendment_number")
+                    qs_amend.all().order_by("amendment_number")
                 )
                 # Try AmendmentSummary records first; fall through to document
                 # summaries if none have usable content.
@@ -615,7 +616,7 @@ class LegislationSummaryManager(models.Manager):
 
             # Invoke the summarizer.
             summarizer = LEGISLATION_SUMMARIZERS_BY_STYLE[style]
-            result = summarizer(
+            result = summarizer(  # type: ignore[call-arg]
                 legislation.title,
                 document_summary_texts=document_summary_texts,
                 legislation_data=legislation.raw_crawl_data,
@@ -845,10 +846,8 @@ class SummaryCorrection(models.Model):
         verbose_name_plural = "Summary corrections"
 
     def __str__(self):
-        return (
-            f"Correction [{self.get_dimension_display()}] — "
-            f"{self.legislation_summary.legislation.record_no}"
-        )
+        dim = self.get_dimension_display()  # type: ignore[attr-defined]
+        return f"Correction [{dim}] — {self.legislation_summary.legislation.record_no}"
 
 
 class CrawlMetadata(models.Model):

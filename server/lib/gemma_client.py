@@ -85,6 +85,7 @@ class GemmaClient:
                     raise
             if attempt < 2:
                 time.sleep(15 * (attempt + 1))
+        assert last_response is not None
         last_response.raise_for_status()
         data = last_response.json()
         return data["choices"][0]["message"]["content"].strip()

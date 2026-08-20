@@ -61,8 +61,6 @@ def score_summary(
     tool_definition: dict,
 ) -> dict:
     """Score a summary using the current rubric. Returns the tool-input dict."""
-    from evaluate_summaries import _build_user_message  # noqa: F401 — inline import
-
     system = build_system_prompt()
     user_msg = (
         f"## SOURCE TEXT\n\n{source_text[:8000] if source_text else '(no source)'}\n\n"
