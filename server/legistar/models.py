@@ -291,7 +291,8 @@ class MeetingSummaryManager(models.Manager):
             )
             if not isinstance(result, SummarizationSuccess):
                 raise RuntimeError(
-                    f"Summarization failed for meeting {meeting.legistar_id}: {getattr(result, 'message', result)}"
+                    f"Summarization failed for meeting {meeting.legistar_id}:"
+                    f" {getattr(result, 'message', result)}"
                 )
             summary = self.create(
                 meeting=meeting,
@@ -623,7 +624,8 @@ class LegislationSummaryManager(models.Manager):
             )
             if not isinstance(result, SummarizationSuccess):
                 raise RuntimeError(
-                    f"Summarization failed for {legislation.record_no}: {getattr(result, 'message', result)}"
+                    f"Summarization failed for {legislation.record_no}:"
+                    f" {getattr(result, 'message', result)}"
                 )
             summary = self.create(
                 legislation=legislation,

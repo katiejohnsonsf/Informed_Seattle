@@ -38,8 +38,8 @@ class Command(BaseCommand):
             metavar="KEY",
             help=(
                 "Optimize only the specified prompt keys "
-                "(original_proposal, final_text, differences, headline, simple_summary). "
-                "Defaults to all."
+                "(original_proposal, final_text, differences, headline,"
+                " simple_summary). Defaults to all."
             ),
         )
 

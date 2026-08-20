@@ -1,7 +1,7 @@
 """Alignment rubric and prompt management.
 
-rubric.json  — evolving quality rubric with per-dimension rules derived from human corrections.
-prompts.json — versioned prompt templates for each summarization section.
+rubric.json  — evolving quality rubric with per-dimension rules derived from human
+corrections. prompts.json — versioned prompt templates for each summarization section.
 """
 
 from __future__ import annotations

@@ -16,7 +16,6 @@ Usage (via management command):
 from __future__ import annotations
 
 import sys
-from collections import defaultdict
 
 from .rubric import get_rubric, load_prompts, save_prompts
 

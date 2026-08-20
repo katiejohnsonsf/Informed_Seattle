@@ -15,7 +15,6 @@ Usage:
     python manage.py synthesize_rules --all          # include already-synthesized
 """
 
-import sys
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -77,5 +76,6 @@ class Command(BaseCommand):
             self.stderr.write(f"[dry-run] Would add {total_rules} rule(s).")
         else:
             self.stderr.write(
-                f"Done. Added {total_rules} new rule(s) across {len(new_rules)} dimension(s)."
+                f"Done. Added {total_rules} new rule(s)"
+                f" across {len(new_rules)} dimension(s)."
             )

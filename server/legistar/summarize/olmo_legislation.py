@@ -148,8 +148,9 @@ def analyze_legislation_history(
 
 
 _DEFAULT_ORIGINAL_PROPOSAL = (
-    "Summarize in 2-3 sentences what this Seattle City Council bill originally proposed:\n\n"
-    "Title: {title}\n\nBill text (excerpt):\n{text_excerpt}\n\nWhat was originally proposed:"
+    "Summarize in 2-3 sentences what this Seattle City Council bill originally"
+    " proposed:\n\nTitle: {title}\n\nBill text (excerpt):\n{text_excerpt}"
+    "\n\nWhat was originally proposed:"
 )
 
 
@@ -232,8 +233,8 @@ def _format_amendments_and_votes(
 
 
 _DEFAULT_FINAL_TEXT = (
-    "Summarize in 3-4 sentences what this Seattle City Council bill does in its current form:\n\n"
-    "{context}\n\nWhat the legislation does:"
+    "Summarize in 3-4 sentences what this Seattle City Council bill does in its"
+    " current form:\n\n{context}\n\nWhat the legislation does:"
 )
 
 
@@ -266,7 +267,7 @@ _DEFAULT_DIFFERENCES = (
 
 
 def _summarize_differences(olmo, title: str, analysis: LegislationAnalysis) -> str:
-    """Summarize differences between original and final (LLM call only if amendments exist)."""
+    """Summarize differences between original and final (only if amendments exist)."""
     if not analysis.amendments:
         return (
             "No amendments have been made. The current text is the same"

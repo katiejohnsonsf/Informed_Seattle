@@ -221,7 +221,8 @@ class DocumentSummaryManager(models.Manager):
             result = summarizer(text=document.extracted_text)
             if not isinstance(result, SummarizationSuccess):
                 raise RuntimeError(
-                    f"Summarization failed for document {document.pk}: {getattr(result, 'message', result)}"
+                    f"Summarization failed for document {document.pk}:"
+                    f" {getattr(result, 'message', result)}"
                 )
             document_summary = self.create(
                 document=document,

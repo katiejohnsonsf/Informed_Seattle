@@ -28,10 +28,12 @@ class Command(BaseCommand):
 
         self.stdout.write("\n=== ALIGNMENT REPORT ===\n")
         self.stdout.write(
-            f"Rubric  v{rubric.get('version', 1)} — updated {rubric.get('updated_at', 'unknown')}"
+            f"Rubric  v{rubric.get('version', 1)}"
+            f" — updated {rubric.get('updated_at', 'unknown')}"
         )
         self.stdout.write(
-            f"Prompts v{prompts.get('version', 1)} — updated {prompts.get('updated_at', 'unknown')}\n"
+            f"Prompts v{prompts.get('version', 1)}"
+            f" — updated {prompts.get('updated_at', 'unknown')}\n"
         )
 
         # Rubric rules per dimension
@@ -54,7 +56,7 @@ class Command(BaseCommand):
         pending_corrections = SummaryCorrection.objects.filter(
             synthesized=False
         ).count()
-        self.stdout.write(f"\n--- CORRECTIONS ---")
+        self.stdout.write("\n--- CORRECTIONS ---")
         self.stdout.write(
             f"Total: {total_corrections}  |  Pending synthesis: {pending_corrections}"
         )
@@ -93,7 +95,7 @@ class Command(BaseCommand):
             )
 
         # Prompt versions
-        self.stdout.write(f"\n--- PROMPT VERSIONS ---")
+        self.stdout.write("\n--- PROMPT VERSIONS ---")
         for key, cfg in prompts.get("prompts", {}).items():
             has_prev = "previous_template" in cfg
             flag = " [optimized]" if has_prev else ""
