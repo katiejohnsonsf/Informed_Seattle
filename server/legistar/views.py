@@ -21,11 +21,8 @@ from .models import (
     SummaryEvaluation,
 )
 
-_SUMMARY_PENDING = "Summary pending\u2026"
-_SUMMARY_PENDING_BODY = (
-    "The AI summarization service is currently experiencing an outage. "
-    "Please check back in a few hours for this week's updated summaries."
-)
+_SUMMARY_PENDING = "Summary not yet available"
+_SUMMARY_PENDING_BODY = "A summary for this bill is not yet available."
 _COUNCIL_BILL_KIND = "Council Bill"
 _PAGE_SIZE = 25
 

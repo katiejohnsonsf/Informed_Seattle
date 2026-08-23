@@ -4,8 +4,6 @@ name: Retry Pending Summaries
 # runs the summarization pipeline and pushes the updated DB, which
 # triggers the deploy-to-pages workflow automatically.
 on:
-  schedule:
-    - cron: '0 */3 * * *'
   workflow_dispatch:
 
 jobs:
