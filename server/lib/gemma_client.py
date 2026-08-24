@@ -76,7 +76,7 @@ class GemmaClient:
                     self._chat_completions_url(),
                     json=payload,
                     headers=headers,
-                    timeout=300,
+                    timeout=120,
                 )
                 if last_response.status_code < 500:
                     break

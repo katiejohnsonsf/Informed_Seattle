@@ -99,6 +99,7 @@ jobs:
       - name: Run summarization pipeline
         if: steps.check.outputs.should_run == 'true'
         shell: micromamba-shell {0}
+        timeout-minutes: 90
         run: python setup_summaries.py
 
       - name: Commit and push updated database
