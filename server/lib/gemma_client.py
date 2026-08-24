@@ -78,11 +78,15 @@ class GemmaClient:
                     self._chat_completions_url(),
                     json=payload,
                     headers=headers,
-                    timeout=120,
+                    timeout=60,
                 )
                 if last_response.status_code < 500:
                     break
-            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            except requests.exceptions.Timeout:
+                # Don't retry timeouts — Gemma is hung, not transiently busy.
+                # The pipeline will skip this item and the next run will retry.
+                raise
+            except requests.exceptions.ConnectionError:
                 if attempt == 2:
                     raise
             if attempt < 2:
