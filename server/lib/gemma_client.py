@@ -56,6 +56,7 @@ class GemmaClient:
         prompt: str,
         temperature: float = 0.7,
         top_p: float = 0.9,
+        max_new_tokens: int = 512,
         **_kwargs,
     ) -> str:
         """Generate text from a prompt via the configured Gemma endpoint."""
@@ -64,6 +65,7 @@ class GemmaClient:
             "messages": [{"role": "user", "content": prompt}],
             "temperature": temperature,
             "top_p": top_p,
+            "max_tokens": max_new_tokens,
         }
         headers = {
             "Authorization": f"Bearer {self.api_key}",
