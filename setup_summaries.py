@@ -222,9 +222,13 @@ def _summarize_one_legislation(legislation, style, i, total):
         print(f"[{i}/{total}] {legislation.record_no}: (already summarized)")
         return False
 
-    doc_count = legislation.documents.count()
+    # Only count docs with enough extracted text to be summarizable (>= 50 chars).
+    # Docs with near-empty text (e.g. failed PDF parses) are skipped so they
+    # don't permanently block the legislation summary.
+    summarizable_docs = legislation.documents.filter(extracted_text__regex=r".{50}")
+    doc_count = summarizable_docs.count()
     summarized_doc_count = DocumentSummary.objects.filter(
-        document__in=legislation.documents.all(), style=style
+        document__in=summarizable_docs, style=style
     ).count()
     if doc_count > 0 and summarized_doc_count < doc_count:
         print(
@@ -316,7 +320,7 @@ def summarize_all_meetings():
                 if created:
                     print(f"  ✓ {summary.headline[:60]}...")
                 else:
-                    print(f"  ↻ Using existing summary")
+                    print("  ↻ Using existing summary")
             except Exception as e:
                 print(f"  ✗ Error: {e}")
 
@@ -343,9 +347,7 @@ def main():
             .exclude(extracted_text="")
             .distinct()
         )
-        cb_doc_summaries = DocumentSummary.objects.filter(
-            document__in=cb_docs
-        ).count()
+        cb_doc_summaries = DocumentSummary.objects.filter(document__in=cb_docs).count()
         cb_summaries = LegislationSummary.objects.filter(
             legislation_id__in=recent_cb_ids
         ).count()
