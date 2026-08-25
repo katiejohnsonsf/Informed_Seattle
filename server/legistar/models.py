@@ -7,6 +7,7 @@ import urllib.parse
 
 import requests
 from django.db import models, transaction
+from django.db.models.functions import Length
 
 from server.documents.models import Document, DocumentSummary
 from server.documents.summarize import SummarizationSuccess
@@ -222,11 +223,12 @@ class Meeting(models.Model):
         a summary for each existing document. If `require` is False, we return
         whatever we can find.
         """
-        document_objs = (
-            list(self.documents.exclude(kind__in=excludes))
-            if excludes
-            else list(self.documents.all())
+        qs = self.documents.annotate(text_len=Length("extracted_text")).filter(
+            text_len__gte=50
         )
+        if excludes:
+            qs = qs.exclude(kind__in=excludes)
+        document_objs = list(qs)
         document_summary_objs = DocumentSummary.objects.filter(
             document__in=document_objs,
             style=style,
@@ -469,11 +471,12 @@ class Legislation(models.Model):
         require: bool = True,
     ) -> t.Iterable[DocumentSummary]:
         """Return the document summaries for the legislation."""
-        document_objs = (
-            list(self.documents.exclude(kind__in=excludes))
-            if excludes
-            else list(self.documents.all())
+        qs = self.documents.annotate(text_len=Length("extracted_text")).filter(
+            text_len__gte=50
         )
+        if excludes:
+            qs = qs.exclude(kind__in=excludes)
+        document_objs = list(qs)
         document_summary_objs = DocumentSummary.objects.filter(
             document__in=document_objs,
             style=style,
