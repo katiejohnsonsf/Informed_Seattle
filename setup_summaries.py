@@ -225,10 +225,16 @@ def _summarize_one_legislation(legislation, style, i, total):
     # Only count docs with enough extracted text to be summarizable (>= 50 chars).
     # Docs with near-empty text (e.g. failed PDF parses) are skipped so they
     # don't permanently block the legislation summary.
-    summarizable_docs = legislation.documents.filter(extracted_text__regex=r".{50}")
-    doc_count = summarizable_docs.count()
+    from django.db.models.functions import Length
+
+    summarizable_doc_ids = list(
+        legislation.documents.annotate(text_len=Length("extracted_text"))
+        .filter(text_len__gte=50)
+        .values_list("id", flat=True)
+    )
+    doc_count = len(summarizable_doc_ids)
     summarized_doc_count = DocumentSummary.objects.filter(
-        document__in=summarizable_docs, style=style
+        document_id__in=summarizable_doc_ids, style=style
     ).count()
     if doc_count > 0 and summarized_doc_count < doc_count:
         print(
