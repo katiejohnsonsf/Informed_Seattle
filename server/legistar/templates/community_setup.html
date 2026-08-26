@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if profile %}Edit Profile{% else %}New Community Profile{% endif %} — Informed Seattle</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1a1a2e;
+      --navy-light: #2a2a4e;
+      --accent: #4f8ef7;
+      --accent-bg: #eff6ff;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --white: #ffffff;
+      --input-focus: #3b82f6;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: var(--navy);
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-title { font-size: 14px; font-weight: 600; }
+    .header-sub { font-size: 12px; color: #94a3b8; }
+    .header-back {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .header-back:hover { color: #fff; }
+
+    .content { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+
+    .errors {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      color: var(--red);
+      font-size: 13px;
+    }
+    .errors li { margin-left: 16px; }
+
+    .section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 24px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .section-desc {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .governance-note {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #92400e;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    label.field-label {
+      display: block;
+      font-weight: 500;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .field-group { margin-bottom: 18px; }
+    .required { color: var(--red); margin-left: 2px; }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    textarea { resize: vertical; min-height: 90px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+    /* Constituency groups */
+    .const-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .const-group-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .const-group ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .const-group li { display: flex; align-items: center; gap: 8px; }
+    .const-group label {
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
+    input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent); }
+
+    .select-controls { display: flex; gap: 10px; margin-bottom: 14px; }
+    .link-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--accent);
+      padding: 0;
+      text-decoration: underline;
+    }
+    .link-btn:hover { color: #1d4ed8; }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding-top: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 20px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+
+    .preview-badge {
+      display: inline-block;
+      background: var(--accent-bg);
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 12px;
+      margin: 2px;
+    }
+    #preview-area { min-height: 28px; margin-top: 14px; }
+    #preview-empty { color: var(--muted); font-size: 12px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="header-title">Informed Seattle — Staff</div>
+      <div class="header-sub">{% if profile %}Edit{% else %}New{% endif %} Community Profile</div>
+    </div>
+    <a href="{% url 'legistar:community_list' %}" class="header-back">← Back to profiles</a>
+  </div>
+
+  <div class="content">
+    <h1>{% if profile %}Edit: {{ profile.name }}{% else %}Set up a community profile{% endif %}</h1>
+    <p class="subtitle">
+      Your profile tells the labeling agent which constituencies your community represents.
+      Bills will be analyzed specifically from your members' perspective.
+    </p>
+
+    {% if errors %}
+      <div class="errors">
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Section 1: Identity -->
+      <div class="section">
+        <div class="section-title">About your community</div>
+        <div class="section-desc">
+          This information may be shown to residents alongside labeled bills
+          so they know who produced the community-specific analysis.
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="name">Community name <span class="required">*</span></label>
+          <input type="text" id="name" name="name" value="{{ name|default:'' }}"
+                 placeholder="e.g. Rainier Valley Community Council" required>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="description">Short description</label>
+          <textarea id="description" name="description"
+                    placeholder="Who you are and what you care about — shown to residents.">{{ description|default:'' }}</textarea>
+        </div>
+      </div>
+
+      <!-- Section 2: Agent context -->
+      <div class="section">
+        <div class="section-title">Agent context</div>
+        <div class="section-desc">
+          This text is injected directly into the labeling agent's prompt. Be specific:
+          geographic focus, housing tenure of most members, economic context, language access
+          needs, or anything else the agent should weigh when identifying stakes.
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="prompt_context">Context for the labeling agent</label>
+          <textarea id="prompt_context" name="prompt_context" style="min-height:120px"
+                    placeholder="e.g. Most of our members are renters in the Rainier Valley (District 2 and 3), many with limited English. We are particularly concerned with displacement risk, transit access, and small business impacts on Rainier Ave S.">{{ prompt_context|default:'' }}</textarea>
+          <p class="hint">This is only used internally — residents don't see it directly.</p>
+        </div>
+      </div>
+
+      <!-- Section 3: Constituencies -->
+      <div class="section">
+        <div class="section-title">Who does your community represent?</div>
+        <div class="section-desc">
+          Check every constituency your community speaks for. The agent will only report
+          stakes for the groups you select — so be inclusive rather than narrow.
+        </div>
+        <div class="governance-note">
+          <strong>Governance note:</strong> This list is community-defined, not auto-assigned.
+          You decide which constituencies exist and what counts as meaningfully affecting them.
+          Stakes the agent proposes can always be contested by your community through the review interface.
+        </div>
+
+        <div class="select-controls">
+          <button type="button" class="link-btn" onclick="selectAll()">Select all</button>
+          <button type="button" class="link-btn" onclick="clearAll()">Clear all</button>
+        </div>
+
+        <div class="const-grid" id="constituency-grid">
+          {% for group in groups %}
+            <div class="const-group">
+              <div class="const-group-label">{{ group.label }}</div>
+              <ul>
+                {% for term in group.terms %}
+                  <li>
+                    <input type="checkbox" name="constituencies"
+                           id="c_{{ term.slug }}" value="{{ term.slug }}"
+                           {% if term.checked %}checked{% endif %}
+                           onchange="updatePreview()">
+                    <label for="c_{{ term.slug }}">{{ term.label }}</label>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Custom constituencies -->
+        <div class="field-group" style="margin-top: 22px;">
+          <label class="field-label" for="custom_constituencies">
+            Custom constituencies
+            <span style="font-weight:400;color:var(--muted)">— one per line</span>
+          </label>
+          <textarea id="custom_constituencies" name="custom_constituencies"
+                    style="min-height: 70px; font-family: monospace; font-size: 13px;"
+                    placeholder="condo-owners&#10;arts-workers&#10;night-economy-workers"
+                    onchange="updatePreview()">{{ custom_constituencies|default:'' }}</textarea>
+          <p class="hint">Use lowercase with hyphens (e.g. <code>arts-workers</code>). These extend the default list.</p>
+        </div>
+
+        <div id="preview-area">
+          <div class="const-group-label" style="margin-bottom:6px">Selected constituencies preview</div>
+          <div id="preview-badges"><span id="preview-empty">None selected yet</span></div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'legistar:community_list' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          {% if profile %}Save changes{% else %}Create profile{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function getCheckedSlugs() {
+      const checked = document.querySelectorAll('input[name="constituencies"]:checked');
+      return Array.from(checked).map(el => el.value);
+    }
+
+    function getCustomTerms() {
+      const raw = document.getElementById('custom_constituencies').value;
+      return raw.split('\n')
+        .map(t => t.trim().toLowerCase().replace(/\s+/g, '-'))
+        .filter(Boolean);
+    }
+
+    function updatePreview() {
+      const slugs = [...new Set([...getCheckedSlugs(), ...getCustomTerms()])];
+      const container = document.getElementById('preview-badges');
+      const empty = document.getElementById('preview-empty');
+      if (slugs.length === 0) {
+        container.innerHTML = '<span id="preview-empty">None selected yet</span>';
+        return;
+      }
+      container.innerHTML = slugs.map(s =>
+        `<span class="preview-badge">${s.replace(/-/g, '‑')}</span>`
+      ).join('');
+    }
+
+    function selectAll() {
+      document.querySelectorAll('input[name="constituencies"]')
+        .forEach(el => el.checked = true);
+      updatePreview();
+    }
+
+    function clearAll() {
+      document.querySelectorAll('input[name="constituencies"]')
+        .forEach(el => el.checked = false);
+      updatePreview();
+    }
+
+    // Initialize preview on load
+    document.addEventListener('DOMContentLoaded', updatePreview);
+  </script>
+</body>
+</html>

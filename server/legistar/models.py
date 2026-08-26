@@ -853,6 +853,113 @@ class SummaryCorrection(models.Model):
         return f"Correction [{dim}] — {self.legislation_summary.legislation.record_no}"
 
 
+class CommunityProfile(models.Model):
+    """
+    A community group's self-description and declared constituencies.
+
+    Created through the /community/setup/ staff form. The profile's
+    constituencies and prompt_context are injected into the labeling agent's
+    prompt so that stakes assessments are community-specific.
+    """
+
+    name = models.CharField(max_length=200, unique=True)
+    description = models.TextField(
+        blank=True,
+        help_text="Short description shown to residents — who you are, what you care about.",
+    )
+    prompt_context = models.TextField(
+        blank=True,
+        help_text=(
+            "Additional context fed to the labeling agent. "
+            "Describe your geographic focus, key concerns, or member demographics."
+        ),
+    )
+    # community-defined constituency terms (flat list of strings).
+    # Drawn from label_schema.DEFAULT_CONSTITUENCIES plus any custom terms the
+    # community adds. The agent uses this list when identifying stakes.
+    constituencies = models.JSONField(
+        default=list,
+        help_text="Flat list of constituency slugs this community cares about.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Community Profile"
+        verbose_name_plural = "Community Profiles"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class CBLabel(models.Model):
+    """
+    Four-facet label record for a Council Bill.
+
+    One row per (legislation, community_profile) pair.
+    When community_profile is None the label represents a generic pass
+    using all default constituencies.
+    """
+
+    legislation = models.ForeignKey(
+        Legislation,
+        on_delete=models.CASCADE,
+        related_name="labels",
+    )
+    community_profile = models.ForeignKey(
+        CommunityProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="labels",
+        help_text="The community whose constituencies shaped this label. Null = generic pass.",
+    )
+
+    # Facet 0 — Triage
+    record_class = models.CharField(max_length=60, default="other_administrative")
+    resident_salient = models.BooleanField(default=False)
+
+    # Facet 1 — Topic
+    policy_area = models.CharField(max_length=80, blank=True)
+    subject_terms = models.JSONField(
+        default=list,
+        help_text="Seattle City Clerk Thesaurus terms.",
+    )
+
+    # Facet 2a — Statutory populations (legally grounded)
+    statutory_populations = models.JSONField(default=list)
+
+    # Facet 3 — Stakes (list of {group, relation, valence, directness, confidence})
+    stakes = models.JSONField(default=list)
+
+    # Derived from Legistar action history (not inferred)
+    participation_window = models.CharField(max_length=40, blank=True)
+
+    labeled_at = models.DateTimeField(auto_now_add=True)
+    # Store which model/version produced this label for audit purposes.
+    model_version = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        verbose_name = "CB Label"
+        verbose_name_plural = "CB Labels"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["legislation", "community_profile"],
+                name="unique_cblabel_per_legislation_community",
+            )
+        ]
+
+    def __str__(self):
+        community = self.community_profile.name if self.community_profile else "generic"
+        return f"Label [{community}] {self.legislation.record_no}"
+
+    @property
+    def top_stakes(self) -> list[dict]:
+        """Stakes sorted by confidence descending, limited to top 5."""
+        return sorted(self.stakes, key=lambda s: s.get("confidence", 0), reverse=True)[:5]
+
+
 class CrawlMetadata(models.Model):
     """
     Singleton model that tracks when the last crawl happened.

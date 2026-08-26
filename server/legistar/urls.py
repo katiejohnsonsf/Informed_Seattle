@@ -1,7 +1,7 @@
 from django.urls import path
 from django_distill import distill_path
 
-from . import views, views_review
+from . import views, views_community, views_review
 
 app_name = "legistar"
 urlpatterns = [
@@ -58,4 +58,9 @@ urlpatterns = [
     # Staff-only review UI — excluded from the static distill build
     path("review/", views_review.review_index, name="review_index"),
     path("review/<int:pk>/", views_review.review_summary, name="review_summary"),
+    # Community setup UI — staff-only, not included in static distill build
+    path("community/", views_community.community_list, name="community_list"),
+    path("community/new/", views_community.community_new, name="community_new"),
+    path("community/<int:pk>/edit/", views_community.community_edit, name="community_edit"),
+    path("community/<int:pk>/delete/", views_community.community_delete, name="community_delete"),
 ]
