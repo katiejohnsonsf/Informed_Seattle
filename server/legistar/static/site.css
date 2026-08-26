@@ -1690,3 +1690,215 @@ h4.action-type {
 .bill-entry h2 .eval-dot {
   margin-bottom: 2px;
 }
+
+/* ── Bill labels (policy taxonomy) ─────────────────────────────────────── */
+
+.bill-label-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+/* Base tag style — matches .bill-status in spirit */
+.lbl-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.2em 0.6em;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+/* Policy area — neutral indigo */
+.lbl-policy {
+  background: #EEF2FF;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+/* Participation window variants */
+.lbl-window {
+  border: 1px solid transparent;
+}
+.lbl-window-comment {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.lbl-window-hearing {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+.lbl-window-amendable {
+  background: #f5f3ff;
+  color: #5b21b6;
+  border-color: #ddd6fe;
+}
+.lbl-window-closed,
+.lbl-window-enacted {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+
+/* Resident-salient indicator */
+.lbl-salient {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+/* Stakes section */
+.bill-label-stakes {
+  margin: 0.4rem 0 0.75rem;
+}
+
+.bill-label-stakes-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin-bottom: 0.45rem;
+}
+
+.bill-label-stakes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.lbl-stake {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25em;
+  padding: 0.18em 0.55em;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: default;
+  position: relative;
+}
+
+/* Valence colors */
+.lbl-valence-benefit  { background: #f0fdf4; color: #14532d; border-color: #bbf7d0; }
+.lbl-valence-burden   { background: #fef2f2; color: #7f1d1d; border-color: #fecaca; }
+.lbl-valence-mixed    { background: #fffbeb; color: #78350f; border-color: #fde68a; }
+.lbl-valence-unclear  { background: #f9fafb; color: #374151; border-color: #e5e7eb; }
+
+/* Stake tooltip */
+.lbl-stake-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e1b4b;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  width: max-content;
+  max-width: 220px;
+  white-space: normal;
+  text-align: left;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 200;
+}
+.lbl-stake-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1e1b4b;
+}
+.lbl-stake:hover .lbl-stake-tooltip,
+.lbl-stake:focus .lbl-stake-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Label legend (collapsible explainer) */
+.label-legend {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin: 1rem 0 1.5rem;
+  overflow: hidden;
+}
+
+.label-legend summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  background: #f9fafb;
+  user-select: none;
+  list-style: none;
+}
+.label-legend summary::-webkit-details-marker { display: none; }
+.label-legend summary::before {
+  content: "▶";
+  font-size: 0.6rem;
+  color: #9ca3af;
+  transition: transform 0.2s;
+}
+.label-legend[open] summary::before { transform: rotate(90deg); }
+
+.label-legend-body {
+  padding: 1rem 1rem 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.legend-facet-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin-bottom: 0.4rem;
+}
+
+.legend-facet-desc {
+  font-size: 0.78rem;
+  color: #374151;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.legend-swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.legend-swatch {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15em 0.5em;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}

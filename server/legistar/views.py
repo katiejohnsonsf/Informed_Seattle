@@ -13,6 +13,7 @@ from server.lib.style import SUMMARIZATION_STYLES, SummarizationStyle
 from server.lib.truncate import truncate_str
 
 from .models import (
+    CBLabel,
     CrawlMetadata,
     Legislation,
     LegislationSummary,
@@ -757,6 +758,81 @@ def _build_share_text(legislation: Legislation, body: str, summary) -> str:
     return "\n".join(lines)
 
 
+_WINDOW_CLASS = {
+    "comment-open": "lbl-window-comment",
+    "hearing-scheduled": "lbl-window-hearing",
+    "amendable": "lbl-window-amendable",
+    "closed": "lbl-window-closed",
+    "already-enacted": "lbl-window-enacted",
+}
+
+_VALENCE_CLASS = {
+    "benefit": "lbl-valence-benefit",
+    "burden": "lbl-valence-burden",
+    "mixed": "lbl-valence-mixed",
+    "unclear": "lbl-valence-unclear",
+}
+
+
+def _label_context(legislation: Legislation) -> dict | None:
+    """Return display-ready label data for a legislation, or None if unlabeled."""
+    from server.legistar.label_schema import (
+        DIRECTNESS_LABELS,
+        PARTICIPATION_WINDOW_LABELS,
+        POLICY_AREA_LABELS,
+        RELATION_LABELS,
+        VALENCE_LABELS,
+    )
+
+    label = CBLabel.objects.filter(
+        legislation=legislation, community_profile__isnull=True
+    ).first()
+    if label is None:
+        return None
+
+    stakes_display = []
+    for s in label.top_stakes:
+        stakes_display.append(
+            {
+                "group": s["group"].replace("-", "‑"),
+                "relation_short": s["relation"],
+                "relation": RELATION_LABELS.get(s["relation"], s["relation"]),
+                "valence": s["valence"],
+                "valence_label": VALENCE_LABELS.get(s["valence"], s["valence"]),
+                "valence_class": _VALENCE_CLASS.get(
+                    s["valence"], "lbl-valence-unclear"
+                ),
+                "directness": DIRECTNESS_LABELS.get(
+                    s["directness"], s["directness"]
+                ),
+                "directness_short": s["directness"],
+                "confidence": round(s["confidence"] * 100),
+            }
+        )
+
+    return {
+        "policy_area": label.policy_area,
+        "policy_area_label": POLICY_AREA_LABELS.get(
+            label.policy_area, label.policy_area
+        ),
+        "participation_window": label.participation_window,
+        "participation_window_label": PARTICIPATION_WINDOW_LABELS.get(
+            label.participation_window, label.participation_window
+        ),
+        "participation_window_class": _WINDOW_CLASS.get(
+            label.participation_window, ""
+        ),
+        "participation_is_active": label.participation_window
+        in ("comment-open", "hearing-scheduled", "amendable"),
+        "resident_salient": label.resident_salient,
+        "statutory_populations": [
+            p.replace("-", " ").title() for p in label.statutory_populations
+        ],
+        "stakes": stakes_display,
+        "subject_terms": label.subject_terms[:5],
+    }
+
+
 def _legislation_context(legislation: Legislation, style: SummarizationStyle) -> dict:
     """
     Build context data for a `legislation`; this is used in our HTML
@@ -931,6 +1007,7 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         ],
         "share_text": _build_share_text(legislation, body, summary),
         "anchor_id": legislation.record_no.lower().replace(" ", "-"),
+        "label": _label_context(legislation),
     }
 
 

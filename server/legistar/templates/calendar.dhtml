@@ -83,6 +83,48 @@
 {% endblock title %}
 {% block content %}
 
+  <details class="label-legend">
+    <summary>How bills are labeled — what each tag means</summary>
+    <div class="label-legend-body">
+      <div>
+        <div class="legend-facet-title">Policy Area</div>
+        <p class="legend-facet-desc">The primary issue domain the bill addresses — drawn from Seattle's own jurisdiction rather than federal categories.</p>
+        <div class="legend-swatch-row">
+          <span class="legend-swatch lbl-policy">Housing &amp; Tenancy</span>
+          <span class="legend-swatch lbl-policy">Transportation</span>
+          <span class="legend-swatch lbl-policy">Budget</span>
+        </div>
+      </div>
+      <div>
+        <div class="legend-facet-title">Can I still act?</div>
+        <p class="legend-facet-desc">Whether the public can still influence this bill — derived from Legistar's action history, not inferred.</p>
+        <div class="legend-swatch-row">
+          <span class="legend-swatch lbl-window lbl-window-comment">Comment Open</span>
+          <span class="legend-swatch lbl-window lbl-window-hearing">Hearing Scheduled</span>
+          <span class="legend-swatch lbl-window lbl-window-amendable">In Committee</span>
+          <span class="legend-swatch lbl-window lbl-window-enacted">Already Enacted</span>
+        </div>
+      </div>
+      <div>
+        <div class="legend-facet-title">Who's affected &amp; how</div>
+        <p class="legend-facet-desc">Groups likely to have stakes in this bill. Hover a chip for the full relationship. Color shows whether the bill is a benefit, burden, or mixed for that group.</p>
+        <div class="legend-swatch-row">
+          <span class="legend-swatch lbl-valence-benefit">Benefit</span>
+          <span class="legend-swatch lbl-valence-burden">Burden</span>
+          <span class="legend-swatch lbl-valence-mixed">Mixed</span>
+          <span class="legend-swatch lbl-valence-unclear">Unclear</span>
+        </div>
+      </div>
+      <div>
+        <div class="legend-facet-title">Resident-relevant</div>
+        <p class="legend-facet-desc">Bills marked resident-relevant are ones a non-specialist might act on. Routine budget claims, appointments, and contract authorizations are not marked.</p>
+        <div class="legend-swatch-row">
+          <span class="legend-swatch lbl-salient">Resident-relevant</span>
+        </div>
+      </div>
+    </div>
+  </details>
+
   {% for entry in bill_entries %}
     <article class="bill-entry" id="{{ entry.legislation.anchor_id }}" data-share-text="{{ entry.legislation.share_text }}">
       <h4 class="action-type">
@@ -136,6 +178,37 @@
             <span class="share-btn-confirm" aria-live="polite"></span>
           </button>
         </div>
+
+        {% if entry.legislation.label %}{% with lbl=entry.legislation.label %}
+        <div class="bill-label-strip">
+          <span class="lbl-tag lbl-policy" title="Policy area: the primary issue domain this bill addresses">{{ lbl.policy_area_label }}</span>
+          {% if lbl.participation_window %}
+          <span class="lbl-tag lbl-window {{ lbl.participation_window_class }}"
+                title="Participation window: whether the public can still influence this bill">{{ lbl.participation_window_label }}</span>
+          {% endif %}
+          {% if lbl.resident_salient %}
+          <span class="lbl-tag lbl-salient" title="This bill directly affects residents and is worth your attention">Resident‑relevant</span>
+          {% endif %}
+        </div>
+        {% if lbl.stakes %}
+        <div class="bill-label-stakes">
+          <div class="bill-label-stakes-title">Who&rsquo;s affected</div>
+          <div class="bill-label-stakes-list">
+            {% for s in lbl.stakes %}
+            <span class="lbl-stake {{ s.valence_class }}" tabindex="0">
+              {{ s.group }}
+              <span class="lbl-stake-tooltip">
+                <strong>{{ s.group }}</strong><br>
+                {{ s.relation }}<br>
+                {{ s.directness }}<br>
+                Confidence: {{ s.confidence }}%
+              </span>
+            </span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% endwith %}{% endif %}
 
         <div class="vote-map-section">
           <h3 class="vote-map-title">Votes</h3>
