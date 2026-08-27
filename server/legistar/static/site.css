@@ -1775,6 +1775,13 @@ h4.action-type {
   border: 1px solid #bbf7d0;
 }
 
+/* Non-salient (administrative) indicator */
+.lbl-not-salient {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
 /* Stakes section */
 .bill-label-stakes {
   margin: 0.4rem 0 0.75rem;
@@ -1926,9 +1933,10 @@ h4.action-type {
 /* ── Structured label panel (replaces the old chip strip) ────────────── */
 
 .bill-label-panel {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0;
+  display: flex;
+  flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   margin: 0.9rem 0 0.5rem;
@@ -1937,20 +1945,16 @@ h4.action-type {
 
 .lbl-section {
   padding: 0.75rem 1rem;
-  border-right: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
   background: #fafafa;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  /* inset box-shadow draws dividers without affecting box model;
+     overflow:hidden on the panel clips the outermost edges cleanly */
+  box-shadow: inset -1px 0 0 #e5e7eb, inset 0 -1px 0 #e5e7eb;
+  min-width: 140px;
+  max-width: 230px;
 }
-
-.lbl-section:last-child {
-  border-right: none;
-}
-
-/* Remove bottom border on last row of sections using nth-child tricks is
-   fragile; instead we let the panel border do the visual job. */
 
 .lbl-section-title {
   font-size: 0.65rem;
@@ -1975,10 +1979,11 @@ h4.action-type {
   margin-top: 0.05rem;
 }
 
-/* Stakes section inside the panel gets slightly more breathing room */
+/* Stakes section spans the full panel width on its own row */
 .lbl-section-stakes {
-  grid-column: 1 / -1;
-  border-right: none;
+  flex: 1 1 100%;
+  max-width: 100%;
+  box-shadow: inset 0 -1px 0 #e5e7eb;
 }
 
 /* ── Bill Origin section ─────────────────────────────────────────────── */
@@ -2107,11 +2112,13 @@ h4.action-type {
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .bill-label-panel {
     border-color: #374151;
-    background: transparent;
   }
   :root:not([data-theme="light"]) .lbl-section {
     background: #1f2937;
-    border-color: #374151;
+    box-shadow: inset -1px 0 0 #374151, inset 0 -1px 0 #374151;
+  }
+  :root:not([data-theme="light"]) .lbl-section-stakes {
+    box-shadow: inset 0 -1px 0 #374151;
   }
   :root:not([data-theme="light"]) .lbl-section-title,
   :root:not([data-theme="light"]) .origin-meta-label,
@@ -2142,18 +2149,17 @@ h4.action-type {
     color: #d1d5db;
     border-color: #4b5563;
   }
-  :root:not([data-theme="light"]) .origin-meta-row {
-    color: #d1d5db;
-  }
 }
 
 :root[data-theme="dark"] .bill-label-panel {
   border-color: #374151;
-  background: transparent;
 }
 :root[data-theme="dark"] .lbl-section {
   background: #1f2937;
-  border-color: #374151;
+  box-shadow: inset -1px 0 0 #374151, inset 0 -1px 0 #374151;
+}
+:root[data-theme="dark"] .lbl-section-stakes {
+  box-shadow: inset 0 -1px 0 #374151;
 }
 :root[data-theme="dark"] .lbl-section-title,
 :root[data-theme="dark"] .origin-meta-label,
