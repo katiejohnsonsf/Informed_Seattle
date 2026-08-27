@@ -766,12 +766,157 @@ _WINDOW_CLASS = {
     "already-enacted": "lbl-window-enacted",
 }
 
+_WINDOW_DESCRIPTIONS = {
+    "comment-open": (
+        "Public comment is open — submit written comments to the Council Clerk."
+    ),
+    "hearing-scheduled": (
+        "A public hearing is scheduled. You can sign up to testify in person."
+    ),
+    "amendable": (
+        "This bill is in committee. Council members can still propose amendments"
+        " — contact your district representative."
+    ),
+    "closed": (
+        "This bill has cleared committee and awaits a Full Council floor vote."
+    ),
+    "already-enacted": "This bill has been signed into law.",
+}
+
 _VALENCE_CLASS = {
     "benefit": "lbl-valence-benefit",
     "burden": "lbl-valence-burden",
     "mixed": "lbl-valence-mixed",
     "unclear": "lbl-valence-unclear",
 }
+
+_ORIGINATOR_MAP = {
+    "mayor": "Mayor's Office",
+    "department of neighborhoods": "Department of Neighborhoods",
+    "seattle police department": "Seattle Police Department",
+    "seattle public utilities": "Seattle Public Utilities (SPU)",
+    "city light": "Seattle City Light (SCL)",
+    "seattle city light": "Seattle City Light (SCL)",
+    "seattle department of transportation": "SDOT",
+    "office of housing": "Office of Housing",
+    "office of economic development": "Office of Economic Development",
+}
+
+
+def _originator_from_action_by(action_by: str) -> str:
+    """Map a raw Legistar action_by to a clean display name for the originator."""
+    lower = (action_by or "").lower().strip()
+    for key, display in _ORIGINATOR_MAP.items():
+        if key in lower:
+            return display
+    if "council" in lower and "president" not in lower:
+        return "Seattle City Council"
+    if "clerk" in lower:
+        return "City Clerk"
+    return (action_by or "Unknown").strip()
+
+
+def _origin_context(legislation: Legislation) -> dict:
+    """
+    Extract bill origin and legislative journey from Legistar action history.
+
+    Returns a display-ready dict; empty dict when crawl data is unavailable.
+    """
+    try:
+        cd = legislation.crawl_data
+    except Exception:
+        return {}
+
+    rows = list(cd.rows)
+    if not rows:
+        return {}
+
+    # Legistar rows are newest-first; reverse to get chronological order.
+    rows_chrono = list(reversed(rows))
+
+    # Determine originator: look for the first "transmitted" action.
+    originator = ""
+    introduced_date = cd.on_agenda
+    for row in rows_chrono:
+        action_lower = (row.action or "").lower()
+        if "transmitted" in action_lower:
+            originator = _originator_from_action_by(row.action_by or "")
+            if not introduced_date:
+                introduced_date = row.date
+            break
+
+    if not originator:
+        earliest = rows_chrono[0]
+        originator = _originator_from_action_by(earliest.action_by or "")
+        introduced_date = introduced_date or earliest.date
+
+    # Council sponsors (often empty in Seattle Legistar; include when present).
+    sponsor_names = [s.name for s in (cd.sponsors or [])]
+
+    # Lead committee from controlling_body.
+    lead_committee = (cd.controlling_body or "").strip()
+    if lead_committee.lower() in _FULL_COUNCIL_BODIES:
+        lead_committee = "Full Council"
+
+    # Build a simplified legislative-journey timeline.
+    _SKIP = frozenset({"city clerk", "council president's office"})
+    _KEYWORDS = (
+        "referred",
+        "discussed",
+        "pass",
+        "transmitted",
+        "signed",
+        "vetoed",
+        "returned",
+        "hearing",
+        "placed",
+    )
+
+    action_history: list[dict] = []
+    seen_keys: set[tuple] = set()
+    for row in rows_chrono:
+        ab = (row.action_by or "").strip()
+        action = (row.action or "").strip()
+        if not ab or not action:
+            continue
+        if ab.lower() in _SKIP:
+            continue
+        action_lower = action.lower()
+        if not any(kw in action_lower for kw in _KEYWORDS):
+            continue
+        step_key = (ab.lower()[:35], action_lower[:35])
+        if step_key in seen_keys:
+            continue
+        seen_keys.add(step_key)
+        action_history.append(
+            {
+                "date": row.date,
+                "body": ab,
+                "action": action[0].upper() + action[1:] if action else action,
+            }
+        )
+
+    # Affected populations from the generic CBLabel (proxy for communities).
+    affected_populations: list[str] = []
+    try:
+        label = CBLabel.objects.filter(
+            legislation=legislation, community_profile__isnull=True
+        ).first()
+        if label and label.statutory_populations:
+            affected_populations = [
+                p.replace("-", " ").title() for p in label.statutory_populations
+            ]
+    except Exception:
+        pass
+
+    return {
+        "originator": originator,
+        "sponsor_names": sponsor_names,
+        "lead_committee": lead_committee,
+        "introduced_date": introduced_date,
+        "action_history": action_history,
+        "affected_populations": affected_populations,
+    }
 
 
 def _label_context(legislation: Legislation) -> dict | None:
@@ -820,6 +965,9 @@ def _label_context(legislation: Legislation) -> dict | None:
             label.participation_window, label.participation_window
         ),
         "participation_window_class": _WINDOW_CLASS.get(
+            label.participation_window, ""
+        ),
+        "participation_window_desc": _WINDOW_DESCRIPTIONS.get(
             label.participation_window, ""
         ),
         "participation_is_active": label.participation_window
@@ -1008,6 +1156,7 @@ def _legislation_context(legislation: Legislation, style: SummarizationStyle) ->
         "share_text": _build_share_text(legislation, body, summary),
         "anchor_id": legislation.record_no.lower().replace(" ", "-"),
         "label": _label_context(legislation),
+        "origin": _origin_context(legislation),
     }
 
 

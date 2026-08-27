@@ -74,6 +74,57 @@
           </button>
         </div>
 
+        {% if entry.legislation.label %}{% with lbl=entry.legislation.label %}
+        <div class="bill-label-panel">
+
+          <div class="lbl-section">
+            <div class="lbl-section-title">Policy Area</div>
+            <span class="lbl-tag lbl-policy">{{ lbl.policy_area_label }}</span>
+            {% if lbl.subject_terms %}
+            <div class="lbl-subject-terms">{{ lbl.subject_terms|join:" · " }}</div>
+            {% endif %}
+          </div>
+
+          {% if lbl.participation_window %}
+          <div class="lbl-section">
+            <div class="lbl-section-title">Can I still act?</div>
+            <span class="lbl-tag lbl-window {{ lbl.participation_window_class }}">{{ lbl.participation_window_label }}</span>
+            {% if lbl.participation_window_desc %}
+            <div class="lbl-section-desc">{{ lbl.participation_window_desc }}</div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          {% if lbl.stakes %}
+          <div class="lbl-section lbl-section-stakes">
+            <div class="lbl-section-title">Who&rsquo;s affected &amp; how</div>
+            <div class="bill-label-stakes-list">
+              {% for s in lbl.stakes %}
+              <span class="lbl-stake {{ s.valence_class }}" tabindex="0">
+                {{ s.group }}
+                <span class="lbl-stake-tooltip">
+                  <strong>{{ s.group }}</strong><br>
+                  {{ s.relation }}<br>
+                  {{ s.directness }}<br>
+                  Confidence: {{ s.confidence }}%
+                </span>
+              </span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if lbl.resident_salient %}
+          <div class="lbl-section">
+            <div class="lbl-section-title">Resident-relevant</div>
+            <span class="lbl-tag lbl-salient">Yes</span>
+            <div class="lbl-section-desc">This bill is likely to directly affect residents and is worth your attention.</div>
+          </div>
+          {% endif %}
+
+        </div>
+        {% endwith %}{% endif %}
+
         <div class="vote-map-section">
           <h3 class="vote-map-title">Votes</h3>
 
@@ -141,6 +192,62 @@
         <div class="content">
           {{ entry.legislation.summary_without_what_changed | safe }}
         </div>
+
+        {% if entry.legislation.origin %}{% with org=entry.legislation.origin %}
+        <div class="bill-origin">
+          <h2 class="bill-origin-title">Origin of this policy</h2>
+          <div class="origin-meta-row">
+            {% if org.originator %}
+            <div class="origin-meta-item">
+              <span class="origin-meta-label">Introduced by</span>
+              <span class="origin-meta-value">{{ org.originator }}</span>
+            </div>
+            {% endif %}
+            {% if org.lead_committee %}
+            <div class="origin-meta-item">
+              <span class="origin-meta-label">Assigned committee</span>
+              <span class="origin-meta-value">{{ org.lead_committee }}</span>
+            </div>
+            {% endif %}
+            {% if org.introduced_date %}
+            <div class="origin-meta-item">
+              <span class="origin-meta-label">Transmitted</span>
+              <span class="origin-meta-value">{{ org.introduced_date|date:"F j, Y" }}</span>
+            </div>
+            {% endif %}
+            {% if org.sponsor_names %}
+            <div class="origin-meta-item">
+              <span class="origin-meta-label">Council sponsors</span>
+              <span class="origin-meta-value">{{ org.sponsor_names|join:", " }}</span>
+            </div>
+            {% endif %}
+          </div>
+          {% if org.affected_populations %}
+          <div class="origin-populations">
+            <span class="origin-meta-label">Communities this bill concerns</span>
+            <div class="origin-populations-list">
+              {% for pop in org.affected_populations %}
+              <span class="origin-pop-chip">{{ pop }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if org.action_history %}
+          <div class="origin-timeline">
+            <div class="origin-timeline-title">Legislative journey</div>
+            {% for step in org.action_history %}
+            <div class="origin-step">
+              <span class="origin-step-date">{{ step.date|date:"M j" }}</span>
+              <span class="origin-step-sep" aria-hidden="true">&rarr;</span>
+              <span class="origin-step-body">{{ step.body }}</span>
+              <span class="origin-step-action">{{ step.action }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endwith %}{% endif %}
+
       {% endif %}
     </article>
   {% empty %}

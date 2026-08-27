@@ -1902,3 +1902,265 @@ h4.action-type {
   border: 1px solid transparent;
   white-space: nowrap;
 }
+
+/* ── Structured label panel (replaces the old chip strip) ────────────── */
+
+.bill-label-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin: 0.9rem 0 0.5rem;
+  overflow: hidden;
+}
+
+.lbl-section {
+  padding: 0.75rem 1rem;
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lbl-section:last-child {
+  border-right: none;
+}
+
+/* Remove bottom border on last row of sections using nth-child tricks is
+   fragile; instead we let the panel border do the visual job. */
+
+.lbl-section-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #9ca3af;
+  line-height: 1;
+}
+
+.lbl-section-desc {
+  font-size: 0.78rem;
+  color: #4b5563;
+  line-height: 1.45;
+  margin-top: 0.1rem;
+}
+
+.lbl-subject-terms {
+  font-size: 0.72rem;
+  color: #6b7280;
+  line-height: 1.4;
+  margin-top: 0.05rem;
+}
+
+/* Stakes section inside the panel gets slightly more breathing room */
+.lbl-section-stakes {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+/* ── Bill Origin section ─────────────────────────────────────────────── */
+
+.bill-origin {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.bill-origin-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #9ca3af;
+  margin-bottom: 0.9rem;
+  /* override .bill-entry .content h2 if nested */
+  padding: 0 !important;
+}
+
+.origin-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  margin-bottom: 0.9rem;
+}
+
+.origin-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.origin-meta-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #9ca3af;
+}
+
+.origin-meta-value {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* Affected populations */
+.origin-populations {
+  margin-bottom: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.origin-populations-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.origin-pop-chip {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.18em 0.55em;
+  border-radius: 20px;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+/* Legislative journey timeline */
+.origin-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.origin-timeline-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #9ca3af;
+  margin-bottom: 0.35rem;
+}
+
+.origin-step {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  padding: 0.2rem 0;
+  border-left: 2px solid #e5e7eb;
+  padding-left: 0.75rem;
+}
+
+.origin-step-date {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #9ca3af;
+  min-width: 3.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.origin-step-sep {
+  color: #d1d5db;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.origin-step-body {
+  font-weight: 500;
+  color: #374151;
+}
+
+.origin-step-action {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Dark-mode adjustments */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .bill-label-panel {
+    border-color: #374151;
+    background: transparent;
+  }
+  :root:not([data-theme="light"]) .lbl-section {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  :root:not([data-theme="light"]) .lbl-section-title,
+  :root:not([data-theme="light"]) .origin-meta-label,
+  :root:not([data-theme="light"]) .origin-timeline-title {
+    color: #6b7280;
+  }
+  :root:not([data-theme="light"]) .lbl-section-desc,
+  :root:not([data-theme="light"]) .lbl-subject-terms {
+    color: #9ca3af;
+  }
+  :root:not([data-theme="light"]) .bill-origin {
+    border-top-color: #374151;
+  }
+  :root:not([data-theme="light"]) .origin-meta-value {
+    color: #f3f4f6;
+  }
+  :root:not([data-theme="light"]) .origin-step-body {
+    color: #d1d5db;
+  }
+  :root:not([data-theme="light"]) .origin-step-action {
+    color: #9ca3af;
+  }
+  :root:not([data-theme="light"]) .origin-step {
+    border-left-color: #374151;
+  }
+  :root:not([data-theme="light"]) .origin-pop-chip {
+    background: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+  }
+  :root:not([data-theme="light"]) .origin-meta-row {
+    color: #d1d5db;
+  }
+}
+
+:root[data-theme="dark"] .bill-label-panel {
+  border-color: #374151;
+  background: transparent;
+}
+:root[data-theme="dark"] .lbl-section {
+  background: #1f2937;
+  border-color: #374151;
+}
+:root[data-theme="dark"] .lbl-section-title,
+:root[data-theme="dark"] .origin-meta-label,
+:root[data-theme="dark"] .origin-timeline-title {
+  color: #6b7280;
+}
+:root[data-theme="dark"] .lbl-section-desc,
+:root[data-theme="dark"] .lbl-subject-terms {
+  color: #9ca3af;
+}
+:root[data-theme="dark"] .bill-origin {
+  border-top-color: #374151;
+}
+:root[data-theme="dark"] .origin-meta-value {
+  color: #f3f4f6;
+}
+:root[data-theme="dark"] .origin-step-body {
+  color: #d1d5db;
+}
+:root[data-theme="dark"] .origin-step-action {
+  color: #9ca3af;
+}
+:root[data-theme="dark"] .origin-step {
+  border-left-color: #374151;
+}
+:root[data-theme="dark"] .origin-pop-chip {
+  background: #374151;
+  color: #d1d5db;
+  border-color: #4b5563;
+}
