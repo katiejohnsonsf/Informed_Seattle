@@ -774,14 +774,27 @@ _WINDOW_DESCRIPTIONS = {
         "A public hearing is scheduled. You can sign up to testify in person."
     ),
     "amendable": (
-        "This bill is in committee. Council members can still propose amendments"
-        " — contact your district representative."
+        "This bill is in committee. Council members can still propose amendments."
     ),
     "closed": (
         "This bill has cleared committee and awaits a Full Council floor vote."
     ),
     "already-enacted": "This bill has been signed into law.",
 }
+
+# Seattle City Council members — district/position, display name, public email.
+# Sorted by seat number; update after each election cycle.
+_COUNCIL_MEMBER_CONTACTS = [
+    {"district": 1, "district_label": "District 1",        "name": "Rob Saka",               "email": "rob.saka@seattle.gov"},
+    {"district": 2, "district_label": "District 2",        "name": "Eddie Lin",               "email": "eddie.lin@seattle.gov"},
+    {"district": 3, "district_label": "District 3",        "name": "Joy Hollingsworth",       "email": "joy.hollingsworth@seattle.gov"},
+    {"district": 4, "district_label": "District 4",        "name": "Maritza Rivera",          "email": "maritza.rivera@seattle.gov"},
+    {"district": 5, "district_label": "District 5",        "name": "Debora Juarez",           "email": "debora.juarez@seattle.gov"},
+    {"district": 6, "district_label": "District 6",        "name": "Dan Strauss",             "email": "dan.strauss@seattle.gov"},
+    {"district": 7, "district_label": "District 7",        "name": "Robert Kettle",           "email": "robert.kettle@seattle.gov"},
+    {"district": 8, "district_label": "Position 8 At-Large", "name": "Alexis Mercedes Rinck", "email": "alexis.rinck@seattle.gov"},
+    {"district": 9, "district_label": "Position 9 At-Large", "name": "Dionne Foster",         "email": "dionne.foster@seattle.gov"},
+]
 
 _VALENCE_CLASS = {
     "benefit": "lbl-valence-benefit",
@@ -919,6 +932,28 @@ def _origin_context(legislation: Legislation) -> dict:
     }
 
 
+def _committee_display(legislation: Legislation) -> str:
+    """Return committee name for the label panel, or empty string if full council."""
+    cd = legislation.crawl_data
+    if cd is None:
+        return ""
+    body = (cd.controlling_body or "").strip()
+    if body.lower() in _FULL_COUNCIL_BODIES:
+        return ""
+    return body
+
+
+def _committee_date(legislation: Legislation) -> object:
+    """Return on_agenda date only when it's today or in the future, else None."""
+    import datetime
+
+    cd = legislation.crawl_data
+    if cd is None or cd.on_agenda is None:
+        return None
+    today = datetime.date.today()
+    return cd.on_agenda if cd.on_agenda >= today else None
+
+
 def _label_context(legislation: Legislation) -> dict | None:
     """Return display-ready label data for a legislation, or None if unlabeled."""
     from server.legistar.label_schema import (
@@ -978,6 +1013,9 @@ def _label_context(legislation: Legislation) -> dict | None:
         ],
         "stakes": stakes_display,
         "subject_terms": label.subject_terms[:5],
+        "committee": _committee_display(legislation),
+        "committee_date": _committee_date(legislation),
+        "council_members": _COUNCIL_MEMBER_CONTACTS,
     }
 
 

@@ -80,16 +80,6 @@
             {% endif %}
           </div>
 
-          {% if lbl.participation_window %}
-          <div class="lbl-section">
-            <div class="lbl-section-title">Can I still act?</div>
-            <span class="lbl-tag lbl-window {{ lbl.participation_window_class }}">{{ lbl.participation_window_label }}</span>
-            {% if lbl.participation_window_desc %}
-            <div class="lbl-section-desc">{{ lbl.participation_window_desc }}</div>
-            {% endif %}
-          </div>
-          {% endif %}
-
           <div class="lbl-section">
             <div class="lbl-section-title">Resident-relevant</div>
             {% if lbl.resident_salient %}
@@ -100,6 +90,38 @@
             <div class="lbl-section-desc">Routine administrative action — claims settlement, appointment, or contract authorization — without direct resident impact.</div>
             {% endif %}
           </div>
+
+          {% if lbl.participation_window %}
+          <div class="lbl-section lbl-section-window">
+            <div class="lbl-section-title">Can I still act?</div>
+            <span class="lbl-tag lbl-window {{ lbl.participation_window_class }}">{{ lbl.participation_window_label }}</span>
+            {% if lbl.committee %}
+            <div class="lbl-committee-name">{{ lbl.committee }}</div>
+            {% endif %}
+            {% if lbl.committee_date %}
+            <div class="lbl-committee-date">Next meeting: {{ lbl.committee_date|date:"M j, Y" }}</div>
+            {% endif %}
+            {% if lbl.participation_window_desc %}
+            <div class="lbl-section-desc">{{ lbl.participation_window_desc }}</div>
+            {% endif %}
+            {% if lbl.participation_is_active %}
+            <details class="contact-council">
+              <summary class="contact-council-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                Contact your representative
+              </summary>
+              <div class="contact-council-list">
+                {% for m in lbl.council_members %}
+                <a href="mailto:{{ m.email }}" class="council-member-link">
+                  <span class="member-district-badge">{{ m.district_label }}</span>
+                  <span class="member-name">{{ m.name }}</span>
+                </a>
+                {% endfor %}
+              </div>
+            </details>
+            {% endif %}
+          </div>
+          {% endif %}
 
           {% if lbl.stakes %}
           <div class="lbl-section lbl-section-stakes">
