@@ -195,6 +195,17 @@
           </div>
           {% endif %}
 
+          <div class="lbl-section">
+            <div class="lbl-section-title">Resident-relevant</div>
+            {% if lbl.resident_salient %}
+            <span class="lbl-tag lbl-salient">Yes</span>
+            <div class="lbl-section-desc">This bill is likely to directly affect residents and is worth your attention.</div>
+            {% else %}
+            <span class="lbl-tag lbl-not-salient">Administrative</span>
+            <div class="lbl-section-desc">Routine administrative action — claims settlement, appointment, or contract authorization — without direct resident impact.</div>
+            {% endif %}
+          </div>
+
           {% if lbl.stakes %}
           <div class="lbl-section lbl-section-stakes">
             <div class="lbl-section-title">Who&rsquo;s affected &amp; how</div>
@@ -213,17 +224,6 @@
             </div>
           </div>
           {% endif %}
-
-          <div class="lbl-section">
-            <div class="lbl-section-title">Resident-relevant</div>
-            {% if lbl.resident_salient %}
-            <span class="lbl-tag lbl-salient">Yes</span>
-            <div class="lbl-section-desc">This bill is likely to directly affect residents and is worth your attention.</div>
-            {% else %}
-            <span class="lbl-tag lbl-not-salient">Administrative</span>
-            <div class="lbl-section-desc">Routine administrative action — claims settlement, appointment, or contract authorization — without direct resident impact.</div>
-            {% endif %}
-          </div>
 
         </div>
         {% endwith %}{% endif %}
