@@ -303,25 +303,227 @@ function initBillMap(canvas, baseGeoJSON) {
   });
 }
 
+// ---- District population-density maps -----------------------------------
+//
+// A second choropleth per bill, next to the vote map: districts colored by
+// how prevalent one of the bill's flagged "Legally Recognized Populations"
+// is in that district (Census/ACS data, see district_demographics.py).
+// Sequential purple scale — deliberately distinct from the vote map's
+// categorical red/green/gray so the two are never confused at a glance.
+
+var DENSITY_SCALE = ["#f3e8ff", "#d8b4fe", "#a855f7", "#7e22ce", "#581c87"];
+
+function densityBreaks(values) {
+  var min = Math.min.apply(null, values);
+  var max = Math.max.apply(null, values);
+  if (min === max) { max = min + 1; }
+  var step = (max - min) / DENSITY_SCALE.length;
+  var breaks = [];
+  for (var i = 0; i <= DENSITY_SCALE.length; i++) breaks.push(min + step * i);
+  return breaks;
+}
+
+function densityColorFor(value, breaks) {
+  for (var i = 0; i < DENSITY_SCALE.length; i++) {
+    if (value <= breaks[i + 1] || i === DENSITY_SCALE.length - 1) return DENSITY_SCALE[i];
+  }
+  return DENSITY_SCALE[DENSITY_SCALE.length - 1];
+}
+
+function buildDensityColorExpr(byDistrict, breaks) {
+  var expr = ["match", ["get", "district"]];
+  for (var d = 1; d <= 7; d++) {
+    var v = byDistrict[d];
+    expr.push(d, typeof v === "number" ? densityColorFor(v, breaks) : "#e5e7eb");
+  }
+  expr.push("#e5e7eb");
+  return expr;
+}
+
+function renderDensityLegend(container, population, breaks) {
+  container.innerHTML = "";
+  var title = document.createElement("div");
+  title.className = "density-legend-title";
+  title.textContent = population.label + (population.note ? " *" : "");
+  container.appendChild(title);
+
+  var citywide = document.createElement("div");
+  citywide.className = "density-legend-citywide";
+  citywide.textContent = "Citywide: " + population.citywide_percent.toFixed(1) + "% of " + (population.unit || "population");
+  container.appendChild(citywide);
+
+  var row = document.createElement("div");
+  row.className = "density-legend-row";
+  for (var i = 0; i < DENSITY_SCALE.length; i++) {
+    var item = document.createElement("span");
+    item.className = "density-legend-item";
+    var swatch = document.createElement("span");
+    swatch.className = "density-legend-swatch";
+    swatch.style.background = DENSITY_SCALE[i];
+    var label = document.createElement("span");
+    label.textContent = breaks[i].toFixed(1) + "–" + breaks[i + 1].toFixed(1) + "%";
+    item.appendChild(swatch);
+    item.appendChild(label);
+    row.appendChild(item);
+  }
+  container.appendChild(row);
+
+  if (population.note) {
+    var note = document.createElement("div");
+    note.className = "density-legend-note";
+    note.textContent = "* " + population.note;
+    container.appendChild(note);
+  }
+}
+
+function renderDensityTabs(container, populations, activeIndex, onSelect) {
+  container.innerHTML = "";
+  if (populations.length < 2) return;
+  populations.forEach(function (p, i) {
+    var tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "density-tab" + (i === activeIndex ? " density-tab-active" : "");
+    tab.textContent = p.label;
+    tab.addEventListener("click", function () { onSelect(i); });
+    container.appendChild(tab);
+  });
+}
+
+function initDensityMap(canvas, baseGeoJSON) {
+  var populations;
+  try { populations = JSON.parse(canvas.dataset.populations || "[]"); } catch (e) { return; }
+  if (!populations.length) return;
+
+  var wrapper = canvas.closest(".bill-density-map");
+  var tabsEl = wrapper ? wrapper.querySelector(".density-tabs") : null;
+  var legendEl = wrapper ? wrapper.querySelector(".bill-density-legend") : null;
+
+  var bounds = computeBounds(baseGeoJSON);
+  var geojson = {
+    type: "FeatureCollection",
+    features: baseGeoJSON.features.map(function (f) {
+      return Object.assign({}, f, { id: f.properties.district });
+    }),
+  };
+
+  var map = new maplibregl.Map({
+    container: canvas,
+    style: MAP_STYLE,
+    bounds: bounds,
+    fitBoundsOptions: { padding: 24, animate: false },
+    attributionControl: false,
+    scrollZoom: false,
+    boxZoom: false,
+    dragRotate: false,
+    dragPan: false,
+    keyboard: false,
+    doubleClickZoom: false,
+    touchZoomRotate: false,
+  });
+
+  var popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, className: "vote-popup", offset: 8 });
+  var hoveredId = null;
+  var activeIndex = 0;
+
+  function currentBreaks() {
+    var byDistrict = populations[activeIndex].by_district;
+    return densityBreaks([1, 2, 3, 4, 5, 6, 7].map(function (d) { return byDistrict[d]; }));
+  }
+
+  function applyActivePopulation() {
+    var population = populations[activeIndex];
+    var breaks = currentBreaks();
+    if (map.getLayer("density-fills")) {
+      map.setPaintProperty("density-fills", "fill-color", buildDensityColorExpr(population.by_district, breaks));
+    }
+    if (legendEl) renderDensityLegend(legendEl, population, breaks);
+    if (tabsEl) renderDensityTabs(tabsEl, populations, activeIndex, function (i) { activeIndex = i; applyActivePopulation(); });
+  }
+
+  map.on("load", function () {
+    map.addSource("density-districts", { type: "geojson", data: geojson, generateId: false });
+
+    map.addLayer({
+      id: "density-fills",
+      type: "fill",
+      source: "density-districts",
+      paint: {
+        "fill-color": "#e5e7eb",
+        "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.9, 0.75],
+      },
+    });
+    map.addLayer({
+      id: "density-hover",
+      type: "fill",
+      source: "density-districts",
+      paint: { "fill-color": "#000", "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.12, 0] },
+    });
+    map.addLayer({
+      id: "density-outlines",
+      type: "line",
+      source: "density-districts",
+      paint: { "line-color": "#fff", "line-width": 1.5 },
+    });
+    map.addLayer({
+      id: "density-labels",
+      type: "symbol",
+      source: "density-districts",
+      layout: { "text-field": ["get", "district"], "text-size": 11, "text-font": ["Noto Sans Regular"], "text-anchor": "center" },
+      paint: { "text-color": "#1f2937", "text-halo-color": "#fff", "text-halo-width": 1.5 },
+    });
+
+    applyActivePopulation();
+
+    map.on("mousemove", "density-fills", function (ev) {
+      map.getCanvas().style.cursor = "pointer";
+      if (hoveredId !== null) map.setFeatureState({ source: "density-districts", id: hoveredId }, { hover: false });
+      hoveredId = ev.features[0].id;
+      map.setFeatureState({ source: "density-districts", id: hoveredId }, { hover: true });
+
+      var d = ev.features[0].properties.district;
+      var population = populations[activeIndex];
+      var value = population.by_district[d];
+      popup.setLngLat(ev.lngLat).setHTML(
+        '<div class="vp-district">District ' + d + "</div>" +
+        '<div class="vp-name">' + population.label + "</div>" +
+        '<div class="vp-vote dp-value">' + (typeof value === "number" ? value.toFixed(1) + "% of " + (population.unit || "population") : "No data") + "</div>"
+      ).addTo(map);
+    });
+    map.on("mouseleave", "density-fills", function () {
+      map.getCanvas().style.cursor = "";
+      if (hoveredId !== null) map.setFeatureState({ source: "density-districts", id: hoveredId }, { hover: false });
+      hoveredId = null;
+      popup.remove();
+    });
+  });
+}
+
 function initAllBillMaps() {
   if (typeof maplibregl === "undefined") return;
-  var canvases = document.querySelectorAll(".bill-map-canvas[data-votes]");
-  if (!canvases.length) return;
+  var voteCanvases = document.querySelectorAll(".bill-map-canvas[data-votes]");
+  var densityCanvases = document.querySelectorAll(".bill-density-canvas[data-populations]");
+  if (!voteCanvases.length && !densityCanvases.length) return;
   fetch(DISTRICT_GEOJSON_URL)
     .then(function (r) { return r.json(); })
     .then(function (geojson) {
       // Lazily initialize each map only when it scrolls near the viewport.
       // This avoids exhausting the browser's WebGL context limit (~8-16 per page)
       // which would cause the first-initialized maps to lose their context.
+      // Two maps per bill now share this same limit, so it's worth revisiting
+      // if pages with many labeled bills start losing map contexts.
       var observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            observer.unobserve(entry.target);
+          if (!entry.isIntersecting) return;
+          observer.unobserve(entry.target);
+          if (entry.target.classList.contains("bill-density-canvas")) {
+            initDensityMap(entry.target, geojson);
+          } else {
             initBillMap(entry.target, geojson);
           }
         });
       }, { rootMargin: "300px" });
-      canvases.forEach(function (c) { observer.observe(c); });
+      voteCanvases.forEach(function (c) { observer.observe(c); });
+      densityCanvases.forEach(function (c) { observer.observe(c); });
     })
     .catch(function (err) { console.warn("Could not load Seattle district GeoJSON:", err); });
 }

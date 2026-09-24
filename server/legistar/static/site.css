@@ -487,6 +487,47 @@ a.view-link:hover {
   margin: 0;
 }
 
+.crawl-watermark p + p {
+  margin-top: 0.35rem;
+}
+
+/* Methodology note (ⓘ-style hover/focus tooltip, mirrors .bill-status-info) */
+.census-note {
+  position: relative;
+  display: inline-flex;
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+
+.census-note-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  background-color: #1e1b4b;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.45;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  width: max-content;
+  max-width: 320px;
+  white-space: normal;
+  text-align: left;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+}
+
+.census-note:hover .census-note-tooltip,
+.census-note:focus .census-note-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
 /* Bill entry cards */
 .bill-entry {
   padding: 1.5rem 0;
@@ -796,6 +837,135 @@ h4.action-type {
   text-align: center;
   letter-spacing: 0.02em;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ---- Dual map layout: vote map + population-density map side by side ---- */
+.bill-maps-dual {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.bill-map-col {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.bill-map-col .bill-vote-map,
+.bill-map-col .bill-density-map {
+  margin-top: 0;
+}
+
+.bill-map-col-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.bill-density-map {
+  margin-bottom: 0.5rem;
+}
+
+.bill-density-canvas {
+  width: 100%;
+  height: 340px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f3f4f6;
+  position: relative;
+}
+
+.density-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.density-tab {
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25em 0.7em;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.density-tab:hover {
+  border-color: #a855f7;
+  color: #581c87;
+}
+
+.density-tab-active,
+.density-tab-active:hover {
+  background: #581c87;
+  border-color: #581c87;
+  color: #fff;
+}
+
+.bill-density-legend {
+  margin-top: 0.6rem;
+}
+
+.density-legend-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.1rem;
+}
+
+.density-legend-citywide {
+  font-size: 0.72rem;
+  color: #6b7280;
+  margin-bottom: 0.35rem;
+}
+
+.density-legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.density-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.68rem;
+  color: #6b7280;
+}
+
+.density-legend-swatch {
+  width: 0.85em;
+  height: 0.85em;
+  border-radius: 3px;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.density-legend-note {
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.dp-value {
+  background: #f3e8ff;
+  color: #581c87;
+}
+
+@media (max-width: 640px) {
+  .bill-maps-dual {
+    flex-direction: column;
+  }
 }
 
 /* At-large member vote row (displayed above the map) */

@@ -106,6 +106,11 @@ STATUTORY_POPULATIONS = [
     "tribal-members-and-treaty-rights-holders",
     "populations-facing-environmental-harm",
     "overburdened-community-geography",
+    # Not a legally protected category — added because family/household
+    # composition is directly relevant to bills about schools, childcare,
+    # and family housing. See STATUTORY_POPULATION_DEFINITIONS.
+    "households-with-children-under-18",
+    "households-with-a-child-under-6",
 ]
 
 STATUTORY_POPULATION_LABELS = {
@@ -122,6 +127,8 @@ STATUTORY_POPULATION_LABELS = {
     ),
     "populations-facing-environmental-harm": "Populations Facing Environmental Harm",
     "overburdened-community-geography": "Overburdened Community Geography",
+    "households-with-children-under-18": "Households with Children Under 18",
+    "households-with-a-child-under-6": "Households with a Child Under 6",
 }
 
 # Data dictionary: precise definitions grounded in either a real Census/ACS
@@ -200,6 +207,22 @@ STATUTORY_POPULATION_DEFINITIONS = {
         "Environmental Health Disparities Map — combining ACS "
         "socioeconomic data, environmental exposure, and health outcomes "
         "by census tract."
+    ),
+    "households-with-children-under-18": (
+        "Households — family or non-family — with at least one person "
+        "under 18 living there (ACS Table B11005). Not a legally protected "
+        "category; included because bills affecting schools, childcare, or "
+        "family housing tend to matter most to households in this "
+        "situation."
+    ),
+    "households-with-a-child-under-6": (
+        "Family households with at least one own child under age 6 (ACS "
+        "Table B11003). The universe is total families, not all "
+        "households — this table doesn't capture the rare non-family "
+        "household raising a young child. Not a legally protected "
+        "category; a narrower cut of the households-with-children-under-18 "
+        "population, for bills specifically about early-childhood impact "
+        "(childcare, pre-K, infant/toddler services)."
     ),
 }
 

@@ -180,13 +180,30 @@
           </table>
           {% endif %}
 
-          <div class="bill-vote-map">
-            <div class="bill-map-canvas"
-                 data-votes="{{ entry.legislation.district_votes_json }}"
-                 data-amendments="{{ entry.legislation.amendments_json }}"
-                 data-vote-status="{{ entry.legislation.vote_map_status }}"
-                 data-pending-label="{{ entry.legislation.vote_map_pending_label }}"
-                 aria-label="Seattle council district vote map"></div>
+          <div class="bill-maps-dual">
+            <div class="bill-map-col">
+              <div class="bill-map-col-title">How the Council Voted</div>
+              <div class="bill-vote-map">
+                <div class="bill-map-canvas"
+                     data-votes="{{ entry.legislation.district_votes_json }}"
+                     data-amendments="{{ entry.legislation.amendments_json }}"
+                     data-vote-status="{{ entry.legislation.vote_map_status }}"
+                     data-pending-label="{{ entry.legislation.vote_map_pending_label }}"
+                     aria-label="Seattle council district vote map"></div>
+              </div>
+            </div>
+            {% if entry.legislation.label.district_impact %}
+            <div class="bill-map-col">
+              <div class="bill-map-col-title">Who's Affected, by District</div>
+              <div class="bill-density-map">
+                <div class="density-tabs"></div>
+                <div class="bill-density-canvas"
+                     data-populations="{{ entry.legislation.label.district_impact_json }}"
+                     aria-label="Population density by council district"></div>
+                <div class="bill-density-legend"></div>
+              </div>
+            </div>
+            {% endif %}
           </div>
 
           {% if entry.legislation.amendments %}
@@ -306,5 +323,16 @@
   </nav>
 
   <p class="title-eval-link" style="margin-top: 1rem;"><a href="{{ calendar_url }}">&larr; Back to current bills</a></p>
+
+  {% if census_vintage %}
+  <div class="crawl-watermark">
+    <p>
+      Population density maps use the <a href="{{ census_vintage.vintage.source_url }}" target="_blank">{{ census_vintage.vintage.acs_dataset }}</a> ({{ census_vintage.vintage.acs_years_covered }}), tables {{ census_vintage.vintage.tables_used|join:", " }}, retrieved {{ census_vintage.vintage.retrieved_at }}. Council district boundaries: <a href="https://github.com/seattleio/seattle-boundaries-data" target="_blank">seattleio/seattle-boundaries-data</a> (community-maintained, not an official City of Seattle GIS source).
+      <span class="census-note" tabindex="0">Aggregation methodology
+        <span class="census-note-tooltip">{{ census_vintage.methodology }}</span>
+      </span>
+    </p>
+  </div>
+  {% endif %}
 
 {% endblock content %}

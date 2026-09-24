@@ -1,0 +1,573 @@
+{
+  "vintage": {
+    "acs_dataset": "ACS 2023 5-Year Estimates",
+    "acs_years_covered": "2019-2023",
+    "tiger_vintage": 2023,
+    "retrieved_at": "2026-09-24",
+    "source_url": "https://www.census.gov/data/developers/data-sets/acs-5year.html",
+    "api_endpoint": "https://api.census.gov/data/2023/acs/acs5",
+    "tables_used": [
+      "B01001",
+      "B02001",
+      "B03002",
+      "B11003",
+      "B11005",
+      "B13002",
+      "B16002",
+      "B17001",
+      "B18101"
+    ]
+  },
+  "methodology": "Census tract estimates apportioned to City Council districts by area-weighted overlay: each tract's counts are split across districts in proportion to the share of the tract's land area falling in each district, then summed per district. District boundaries: seattleio/seattle-boundaries-data (community-maintained, not an official City of Seattle GIS source). Tract boundaries: US Census Bureau TIGER/Line cartographic boundary files, 2023 vintage. Citywide figures are queried directly at the Seattle place level, not resummed from districts. ACS 5-year estimates carry sampling error that can be substantial at the tract level; treat percentages as estimates, not precise counts.",
+  "excluded_populations": {
+    "workers-in-affected-industries": "Depends on which industry a specific bill affects; not a fixed population share.",
+    "populations-facing-environmental-harm": "Requires environmental-exposure data (e.g. EPA EJScreen, discontinued 2025) layered over demographics; not a Census variable.",
+    "overburdened-community-geography": "Washington HEAL Act designation requires the state's Environmental Health Disparities Map; not a Census variable."
+  },
+  "citywide": {
+    "racial-or-ethnic-minorities": {
+      "count": 297360,
+      "universe": 741440,
+      "percent": 40.1,
+      "table": "B03002"
+    },
+    "low-income-populations": {
+      "count": 71260,
+      "universe": 721999,
+      "percent": 9.9,
+      "table": "B17001"
+    },
+    "linguistically-isolated": {
+      "count": 16582,
+      "universe": 353019,
+      "percent": 4.7,
+      "table": "B16002",
+      "unit": "households"
+    },
+    "people-with-disabilities": {
+      "count": 73793,
+      "universe": 735632,
+      "percent": 10.0,
+      "table": "B18101"
+    },
+    "older-adults": {
+      "count": 94796,
+      "universe": 741440,
+      "percent": 12.8,
+      "table": "B01001"
+    },
+    "youth-and-children": {
+      "count": 103745,
+      "universe": 741440,
+      "percent": 14.0,
+      "table": "B01001"
+    },
+    "pregnant-people-and-new-parents": {
+      "count": 6858,
+      "universe": 216378,
+      "percent": 3.2,
+      "table": "B13002",
+      "note": "Proxy only: women 15-50 who gave birth in the past 12 months. No ACS variable captures current pregnancy."
+    },
+    "tribal-members-and-treaty-rights-holders": {
+      "count": 4254,
+      "universe": 741440,
+      "percent": 0.6,
+      "table": "B02001",
+      "note": "Proxy only: self-identified American Indian/Alaska Native race. Not tribal enrollment or treaty status."
+    },
+    "households-with-children-under-18": {
+      "count": 63366,
+      "universe": 353019,
+      "percent": 17.9,
+      "table": "B11005",
+      "unit": "households"
+    },
+    "households-with-a-child-under-6": {
+      "count": 25542,
+      "universe": 150981,
+      "percent": 16.9,
+      "table": "B11003",
+      "note": "Universe is total families, not all households \u2014 this table doesn't capture the rare non-family household raising a young child.",
+      "unit": "families"
+    }
+  },
+  "districts": {
+    "1": {
+      "racial-or-ethnic-minorities": {
+        "count": 37220,
+        "universe": 103113,
+        "percent": 36.1,
+        "table": "B03002"
+      },
+      "low-income-populations": {
+        "count": 7805,
+        "universe": 102244,
+        "percent": 7.6,
+        "table": "B17001"
+      },
+      "linguistically-isolated": {
+        "count": 1395,
+        "universe": 45503,
+        "percent": 3.1,
+        "table": "B16002",
+        "unit": "households"
+      },
+      "people-with-disabilities": {
+        "count": 10061,
+        "universe": 102335,
+        "percent": 9.8,
+        "table": "B18101"
+      },
+      "older-adults": {
+        "count": 13954,
+        "universe": 103113,
+        "percent": 13.5,
+        "table": "B01001"
+      },
+      "youth-and-children": {
+        "count": 18753,
+        "universe": 103113,
+        "percent": 18.2,
+        "table": "B01001"
+      },
+      "pregnant-people-and-new-parents": {
+        "count": 1103,
+        "universe": 27289,
+        "percent": 4.0,
+        "table": "B13002",
+        "note": "Proxy only: women 15-50 who gave birth in the past 12 months. No ACS variable captures current pregnancy."
+      },
+      "tribal-members-and-treaty-rights-holders": {
+        "count": 574,
+        "universe": 103113,
+        "percent": 0.6,
+        "table": "B02001",
+        "note": "Proxy only: self-identified American Indian/Alaska Native race. Not tribal enrollment or treaty status."
+      },
+      "households-with-children-under-18": {
+        "count": 11451,
+        "universe": 45503,
+        "percent": 25.2,
+        "table": "B11005",
+        "unit": "households"
+      },
+      "households-with-a-child-under-6": {
+        "count": 4695,
+        "universe": 24971,
+        "percent": 18.8,
+        "table": "B11003",
+        "note": "Universe is total families, not all households \u2014 this table doesn't capture the rare non-family household raising a young child.",
+        "unit": "families"
+      }
+    },
+    "2": {
+      "racial-or-ethnic-minorities": {
+        "count": 64222,
+        "universe": 99226,
+        "percent": 64.7,
+        "table": "B03002"
+      },
+      "low-income-populations": {
+        "count": 13422,
+        "universe": 98236,
+        "percent": 13.7,
+        "table": "B17001"
+      },
+      "linguistically-isolated": {
+        "count": 4697,
+        "universe": 39496,
+        "percent": 11.9,
+        "table": "B16002",
+        "unit": "households"
+      },
+      "people-with-disabilities": {
+        "count": 11438,
+        "universe": 98362,
+        "percent": 11.6,
+        "table": "B18101"
+      },
+      "older-adults": {
+        "count": 15740,
+        "universe": 99226,
+        "percent": 15.9,
+        "table": "B01001"
+      },
+      "youth-and-children": {
+        "count": 17805,
+        "universe": 99226,
+        "percent": 17.9,
+        "table": "B01001"
+      },
+      "pregnant-people-and-new-parents": {
+        "count": 1371,
+        "universe": 24651,
+        "percent": 5.6,
+        "table": "B13002",
+        "note": "Proxy only: women 15-50 who gave birth in the past 12 months. No ACS variable captures current pregnancy."
+      },
+      "tribal-members-and-treaty-rights-holders": {
+        "count": 1158,
+        "universe": 99226,
+        "percent": 1.2,
+        "table": "B02001",
+        "note": "Proxy only: self-identified American Indian/Alaska Native race. Not tribal enrollment or treaty status."
+      },
+      "households-with-children-under-18": {
+        "count": 10249,
+        "universe": 39496,
+        "percent": 26.0,
+        "table": "B11005",
+        "unit": "households"
+      },
+      "households-with-a-child-under-6": {
+        "count": 4180,
+        "universe": 22352,
+        "percent": 18.7,
+        "table": "B11003",
+        "note": "Universe is total families, not all households \u2014 this table doesn't capture the rare non-family household raising a young child.",
+        "unit": "families"
+      }
+    },
+    "3": {
+      "racial-or-ethnic-minorities": {
+        "count": 41656,
+        "universe": 109410,
+        "percent": 38.1,
+        "table": "B03002"
+      },
+      "low-income-populations": {
+        "count": 11678,
+        "universe": 106079,
+        "percent": 11.0,
+        "table": "B17001"
+      },
+      "linguistically-isolated": {
+        "count": 2227,
+        "universe": 59400,
+        "percent": 3.7,
+        "table": "B16002",
+        "unit": "households"
+      },
+      "people-with-disabilities": {
+        "count": 11824,
+        "universe": 107451,
+        "percent": 11.0,
+        "table": "B18101"
+      },
+      "older-adults": {
+        "count": 12120,
+        "universe": 109410,
+        "percent": 11.1,
+        "table": "B01001"
+      },
+      "youth-and-children": {
+        "count": 10805,
+        "universe": 109410,
+        "percent": 9.9,
+        "table": "B01001"
+      },
+      "pregnant-people-and-new-parents": {
+        "count": 540,
+        "universe": 33397,
+        "percent": 1.6,
+        "table": "B13002",
+        "note": "Proxy only: women 15-50 who gave birth in the past 12 months. No ACS variable captures current pregnancy."
+      },
+      "tribal-members-and-treaty-rights-holders": {
+        "count": 677,
+        "universe": 109410,
+        "percent": 0.6,
+        "table": "B02001",
+        "note": "Proxy only: self-identified American Indian/Alaska Native race. Not tribal enrollment or treaty status."
+      },
+      "households-with-children-under-18": {
+        "count": 6789,
+        "universe": 59400,
+        "percent": 11.4,
+        "table": "B11005",
+        "unit": "households"
+      },
+      "households-with-a-child-under-6": {
+        "count": 2170,
+        "universe": 18581,
+        "percent": 11.7,
+        "table": "B11003",
+        "note": "Universe is total families, not all households \u2014 this table doesn't capture the rare non-family household raising a young child.",
+        "unit": "families"
+      }
+    },
+    "4": {
+      "racial-or-ethnic-minorities": {
+        "count": 36581,
+        "universe": 101746,
+        "percent": 36.0,
+        "table": "B03002"
+      },
+      "low-income-populations": {
+        "count": 12413,
+        "universe": 91397,
+        "percent": 13.6,
+        "table": "B17001"
+      },
+      "linguistically-isolated": {
+        "count": 1228,
+        "universe": 41815,
+        "percent": 2.9,
+        "table": "B16002",
+        "unit": "households"
+      },
+      "people-with-disabilities": {
+        "count": 7321,
+        "universe": 101604,
+        "percent": 7.2,
+        "table": "B18101"
+      },
+      "older-adults": {
+        "count": 9705,
+        "universe": 101746,
+        "percent": 9.5,
+        "table": "B01001"
+      },
+      "youth-and-children": {
+        "count": 13691,
+        "universe": 101746,
+        "percent": 13.5,
+        "table": "B01001"
+      },
+      "pregnant-people-and-new-parents": {
+        "count": 621,
+        "universe": 34914,
+        "percent": 1.8,
+        "table": "B13002",
+        "note": "Proxy only: women 15-50 who gave birth in the past 12 months. No ACS variable captures current pregnancy."
+      },
+      "tribal-members-and-treaty-rights-holders": {
+        "count": 672,
+        "universe": 101746,
+        "percent": 0.7,
+        "table": "B02001",
+        "note": "Proxy only: self-identified American Indian/Alaska Native race. Not tribal enrollment or treaty status."
+      },
+      "households-with-children-under-18": {
+        "count": 8185,
+        "universe": 41815,
+        "percent": 19.6,
+        "table": "B11005",
+        "unit": "households"
+      },
+      "households-with-a-child-under-6": {
+        "count": 3087,
+        "universe": 17972,
+        "percent": 17.2,
+        "table": "B11003",
+        "note": "Universe is total families, not all households \u2014 this table doesn't capture the rare non-family household raising a young child.",
+        "unit": "families"
+      }
+    },
+    "5": {
+      "racial-or-ethnic-minorities": {
+        "count": 38910,
+        "universe": 101261,
+        "percent": 38.4,
+        "table": "B03002"
+      },
+      "low-income-populations": {
+        "count": 9742,
+        "universe": 100509,
+        "percent": 9.7,
+        "table": "B17001"
+      },
+      "linguistically-isolated": {
+        "count": 2591,
+        "universe": 46036,
+        "percent": 5.6,
+        "table": "B16002",
+        "unit": "households"
+      },
+      "people-with-disabilities": {
+        "count": 12485,
+        "universe": 100702,
+        "percent": 12.4,
+        "table": "B18101"
+      },
+      "older-adults": {
+        "count": 16374,
+        "universe": 101261,
+        "percent": 16.2,
+        "table": "B01001"
+      },
+      "youth-and-children": {
+        "count": 16085,
+        "universe": 101261,
+        "percent": 15.9,
+        "table": "B01001"
+      },
+      "pregnant-people-and-new-parents": {
+        "count": 1265,
+        "universe": 26552,
+        "percent": 4.8,
+        "table": "B13002",
+        "note": "Proxy only: women 15-50 who gave birth in the past 12 months. No ACS variable captures current pregnancy."
+      },
+      "tribal-members-and-treaty-rights-holders": {
+        "count": 434,
+        "universe": 101261,
+        "percent": 0.4,
+        "table": "B02001",
+        "note": "Proxy only: self-identified American Indian/Alaska Native race. Not tribal enrollment or treaty status."
+      },
+      "households-with-children-under-18": {
+        "count": 9744,
+        "universe": 46036,
+        "percent": 21.2,
+        "table": "B11005",
+        "unit": "households"
+      },
+      "households-with-a-child-under-6": {
+        "count": 4260,
+        "universe": 22832,
+        "percent": 18.7,
+        "table": "B11003",
+        "note": "Universe is total families, not all households \u2014 this table doesn't capture the rare non-family household raising a young child.",
+        "unit": "families"
+      }
+    },
+    "6": {
+      "racial-or-ethnic-minorities": {
+        "count": 26842,
+        "universe": 103623,
+        "percent": 25.9,
+        "table": "B03002"
+      },
+      "low-income-populations": {
+        "count": 5695,
+        "universe": 102879,
+        "percent": 5.5,
+        "table": "B17001"
+      },
+      "linguistically-isolated": {
+        "count": 1260,
+        "universe": 49160,
+        "percent": 2.6,
+        "table": "B16002",
+        "unit": "households"
+      },
+      "people-with-disabilities": {
+        "count": 8098,
+        "universe": 103118,
+        "percent": 7.9,
+        "table": "B18101"
+      },
+      "older-adults": {
+        "count": 12476,
+        "universe": 103623,
+        "percent": 12.0,
+        "table": "B01001"
+      },
+      "youth-and-children": {
+        "count": 16377,
+        "universe": 103623,
+        "percent": 15.8,
+        "table": "B01001"
+      },
+      "pregnant-people-and-new-parents": {
+        "count": 985,
+        "universe": 30899,
+        "percent": 3.2,
+        "table": "B13002",
+        "note": "Proxy only: women 15-50 who gave birth in the past 12 months. No ACS variable captures current pregnancy."
+      },
+      "tribal-members-and-treaty-rights-holders": {
+        "count": 237,
+        "universe": 103623,
+        "percent": 0.2,
+        "table": "B02001",
+        "note": "Proxy only: self-identified American Indian/Alaska Native race. Not tribal enrollment or treaty status."
+      },
+      "households-with-children-under-18": {
+        "count": 10376,
+        "universe": 49160,
+        "percent": 21.1,
+        "table": "B11005",
+        "unit": "households"
+      },
+      "households-with-a-child-under-6": {
+        "count": 4256,
+        "universe": 22366,
+        "percent": 19.0,
+        "table": "B11003",
+        "note": "Universe is total families, not all households \u2014 this table doesn't capture the rare non-family household raising a young child.",
+        "unit": "families"
+      }
+    },
+    "7": {
+      "racial-or-ethnic-minorities": {
+        "count": 51807,
+        "universe": 122488,
+        "percent": 42.3,
+        "table": "B03002"
+      },
+      "low-income-populations": {
+        "count": 10587,
+        "universe": 120108,
+        "percent": 8.8,
+        "table": "B17001"
+      },
+      "linguistically-isolated": {
+        "count": 3185,
+        "universe": 71308,
+        "percent": 4.5,
+        "table": "B16002",
+        "unit": "households"
+      },
+      "people-with-disabilities": {
+        "count": 12432,
+        "universe": 121502,
+        "percent": 10.2,
+        "table": "B18101"
+      },
+      "older-adults": {
+        "count": 14296,
+        "universe": 122488,
+        "percent": 11.7,
+        "table": "B01001"
+      },
+      "youth-and-children": {
+        "count": 10255,
+        "universe": 122488,
+        "percent": 8.4,
+        "table": "B01001"
+      },
+      "pregnant-people-and-new-parents": {
+        "count": 951,
+        "universe": 38473,
+        "percent": 2.5,
+        "table": "B13002",
+        "note": "Proxy only: women 15-50 who gave birth in the past 12 months. No ACS variable captures current pregnancy."
+      },
+      "tribal-members-and-treaty-rights-holders": {
+        "count": 496,
+        "universe": 122488,
+        "percent": 0.4,
+        "table": "B02001",
+        "note": "Proxy only: self-identified American Indian/Alaska Native race. Not tribal enrollment or treaty status."
+      },
+      "households-with-children-under-18": {
+        "count": 6539,
+        "universe": 71308,
+        "percent": 9.2,
+        "table": "B11005",
+        "unit": "households"
+      },
+      "households-with-a-child-under-6": {
+        "count": 2906,
+        "universe": 21849,
+        "percent": 13.3,
+        "table": "B11003",
+        "note": "Universe is total families, not all households \u2014 this table doesn't capture the rare non-family household raising a young child.",
+        "unit": "families"
+      }
+    }
+  }
+}

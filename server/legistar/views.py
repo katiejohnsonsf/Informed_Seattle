@@ -9,6 +9,7 @@ from django.utils.html import format_html_join
 from django.views.decorators.http import require_GET
 
 from server.documents.models import Document, DocumentSummary
+from server.legistar.district_demographics import vintage_context
 from server.lib.style import SUMMARIZATION_STYLES, SummarizationStyle
 from server.lib.truncate import truncate_str
 
@@ -1003,6 +1004,7 @@ def _committee_date(legislation: Legislation) -> object:
 
 def _label_context(legislation: Legislation) -> dict | None:
     """Return display-ready label data for a legislation, or None if unlabeled."""
+    from server.legistar.district_demographics import district_impact_for_populations
     from server.legistar.label_schema import (
         DIRECTNESS_LABELS,
         PARTICIPATION_WINDOW_LABELS,
@@ -1068,6 +1070,12 @@ def _label_context(legislation: Legislation) -> dict | None:
             for p in label.statutory_populations
         ],
         "stakes": stakes_display,
+        "district_impact": (
+            district_impact := district_impact_for_populations(
+                label.statutory_populations
+            )
+        ),
+        "district_impact_json": json.dumps(district_impact),
         "committee": (committee := _committee_display(legislation)),
         "committee_date": _committee_date(legislation),
         "council_members": _committee_roster(committee) or _COUNCIL_MEMBER_CONTACTS,
@@ -1519,6 +1527,7 @@ def calendar(request, style: str):
             "last_crawl_at": last_crawl_at,
             "next_crawl_at": next_crawl_at,
             "next_crawl_delta_days": next_crawl_delta_days,
+            "census_vintage": vintage_context(),
         },
     )
 
@@ -1620,6 +1629,7 @@ def _previous_legislation_context(style: SummarizationStyle, page: int) -> dict:
         "prev_page_url": prev_page_url,
         "next_page_url": next_page_url,
         "calendar_url": f"{root}calendar/{style}/",
+        "census_vintage": vintage_context(),
     }
 
 
