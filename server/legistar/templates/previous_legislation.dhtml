@@ -75,9 +75,6 @@
           <div class="lbl-section">
             <div class="lbl-section-title">Policy Area</div>
             <span class="lbl-tag lbl-policy">{{ lbl.policy_area_label }}</span>
-            {% if lbl.subject_terms %}
-            <div class="lbl-subject-terms">{{ lbl.subject_terms|join:" · " }}</div>
-            {% endif %}
           </div>
 
           <div class="lbl-section">
@@ -136,6 +133,20 @@
                   {{ s.directness }}<br>
                   Confidence: {{ s.confidence }}%
                 </span>
+              </span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if lbl.statutory_populations %}
+          <div class="lbl-section lbl-section-statpops">
+            <div class="lbl-section-title">Legally Recognized Populations</div>
+            <div class="bill-label-stakes-list">
+              {% for p in lbl.statutory_populations %}
+              <span class="lbl-stake lbl-valence-unclear" tabindex="0">
+                {{ p.label }}
+                <span class="lbl-stake-tooltip">{{ p.definition }}</span>
               </span>
               {% endfor %}
             </div>

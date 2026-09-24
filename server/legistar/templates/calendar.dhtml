@@ -94,6 +94,12 @@
           <span class="legend-swatch lbl-policy">Transportation</span>
           <span class="legend-swatch lbl-policy">Budget</span>
         </div>
+        <div class="legend-facet-meta">
+          <p><strong>Where this comes from:</strong> An AI model reads the bill's title and summary and places it into one of 26 fixed categories.</p>
+          <p><strong>Confidence:</strong> Low-to-moderate. The model picks a single best-fit area, so a bill that touches several topics — a budget bill that funds a housing program, say — gets filed under whichever one the model judges primary.</p>
+          <p><strong>How to check it:</strong> There's no independent signal to cross-check this against — read the bill's own title or summary if you want to verify the categorization yourself.</p>
+          <p><strong>Definitions:</strong> The 26 policy areas are a taxonomy built specifically for this tool — no outside body maintains or uses it. Seattle's own City Clerk maintains a much more detailed <a href="https://clerk.seattle.gov/search/thesaurus/" target="_blank" rel="noopener">Legislative Thesaurus</a> for internal indexing, but we don't have reliable access to a bill's real indexed terms — Legistar's own bill pages don't expose that field publicly — so we no longer show AI-invented terms in that style here.</p>
+        </div>
       </div>
       <div>
         <div class="legend-facet-title">Can I still act?</div>
@@ -103,6 +109,12 @@
           <span class="legend-swatch lbl-window lbl-window-hearing">Hearing Scheduled</span>
           <span class="legend-swatch lbl-window lbl-window-amendable">In Committee</span>
           <span class="legend-swatch lbl-window lbl-window-enacted">Already Enacted</span>
+        </div>
+        <div class="legend-facet-meta">
+          <p><strong>Where this comes from:</strong> Computed directly from Legistar's own recorded meeting and action history — the only one of these four labels that isn't produced by an AI model.</p>
+          <p><strong>Confidence:</strong> Highest of the four. It's a rule-based read of the city's official record, not a model guess.</p>
+          <p><strong>How to check it:</strong> Still confirm the linked meeting date yourself before showing up or submitting comment — Legistar's own records can lag a last-minute schedule change.</p>
+          <p><strong>Definitions:</strong> The five statuses (Comment Open, Hearing Scheduled, etc.) are read directly off <a href="https://seattle.legistar.com/Calendar.aspx" target="_blank" rel="noopener">seattle.legistar.com</a>, the City's own legislative tracking system — the same record City Council staff and the Clerk's Office use.</p>
         </div>
       </div>
       <div>
@@ -114,12 +126,38 @@
           <span class="legend-swatch lbl-valence-mixed">Mixed</span>
           <span class="legend-swatch lbl-valence-unclear">Unclear</span>
         </div>
+        <div class="legend-facet-meta">
+          <p><strong>Where this comes from:</strong> An AI model estimates, for each group your community tracks, whether the bill affects them and how — then attaches its own numeric confidence to that estimate.</p>
+          <p><strong>Confidence:</strong> Shown explicitly, chip by chip. Hover any group to see the model's confidence as a percentage; only groups it scored 40% or higher are shown at all.</p>
+          <p><strong>How to check it:</strong> Read the percentage before the claim. Treat anything under roughly 60% as a plausible-but-uncertain read rather than settled fact — a higher score means the model is more consistent, not that it has been verified against the bill text by a person.</p>
+          <p><strong>Definitions:</strong> These groups (renters, drivers, small-business owners, and so on) aren't drawn from an outside standard — they're a starting list built for this tool, editable per-community through its setup form. No other entity's definitions apply; if a group feels too broad or too narrow, that's a modeling choice made here, not an external rule.</p>
+        </div>
       </div>
       <div>
         <div class="legend-facet-title">Resident-relevant</div>
         <p class="legend-facet-desc">Bills marked resident-relevant are ones a non-specialist might act on. Routine budget claims, appointments, and contract authorizations are not marked.</p>
         <div class="legend-swatch-row">
           <span class="legend-swatch lbl-salient">Resident-relevant</span>
+        </div>
+        <div class="legend-facet-meta">
+          <p><strong>Where this comes from:</strong> The same AI classification pass as Policy Area — the model judges whether a bill is likely to matter to a non-specialist resident versus being routine administrative business.</p>
+          <p><strong>Confidence:</strong> Lowest of the four. It's a subjective, single-shot judgment call with no official record to check it against.</p>
+          <p><strong>How to check it:</strong> Treat an "Administrative" tag as a cue to skim quickly, not a guarantee there's nothing to see — if a title or summary catches your eye, read it regardless of this tag.</p>
+          <p><strong>Definitions:</strong> "Resident-relevant" is an original category created for this tool. No outside agency or legal standard defines it, and no other entity uses this label.</p>
+        </div>
+      </div>
+      <div>
+        <div class="legend-facet-title">Legally Recognized Populations</div>
+        <p class="legend-facet-desc">Populations with a real Census/ACS definition or a recognized legal status (disability, tribal membership, etc.) that the bill's provisions genuinely reach. Hover a chip to read its exact definition.</p>
+        <div class="legend-swatch-row">
+          <span class="legend-swatch lbl-valence-unclear">Low-Income Populations</span>
+          <span class="legend-swatch lbl-valence-unclear">Older Adults</span>
+        </div>
+        <div class="legend-facet-meta">
+          <p><strong>Where this comes from:</strong> An AI model checks the bill's actual provisions against a fixed set of Census/ACS and legal definitions — shown in full when you hover a chip — and includes only the populations it judges the bill genuinely fits.</p>
+          <p><strong>Confidence:</strong> Moderate. This is better grounded than a bare category name, since the model is matching against a specific ACS or legal definition rather than guessing what a label like "low-income" means — but it's still one AI judgment call, not an actual geographic or statistical match to Census data for this specific bill.</p>
+          <p><strong>How to check it:</strong> Hover a chip to read the definition the model was matching against, then judge for yourself whether the bill's provisions really reach that population.</p>
+          <p><strong>Definitions:</strong> Most are grounded in real Census/ACS variables (poverty status, age, disability, limited-English-speaking households). The two geographic/environmental ones are grounded instead in the composite datasets agencies actually use, like Washington's Environmental Health Disparities Map. Only "Racial or Ethnic Minorities" is a literal Title VI category — the rest draw on separate laws (the ADA, the Age Discrimination Act) or tribal treaty law. The federal environmental-justice executive order and limited-English-proficiency guidance this list echoes were both rescinded in 2025; the underlying Census/ACS data is unaffected.</p>
         </div>
       </div>
     </div>
@@ -180,9 +218,6 @@
           <div class="lbl-section">
             <div class="lbl-section-title">Policy Area</div>
             <span class="lbl-tag lbl-policy">{{ lbl.policy_area_label }}</span>
-            {% if lbl.subject_terms %}
-            <div class="lbl-subject-terms">{{ lbl.subject_terms|join:" · " }}</div>
-            {% endif %}
           </div>
 
           <div class="lbl-section">
@@ -241,6 +276,20 @@
                   {{ s.directness }}<br>
                   Confidence: {{ s.confidence }}%
                 </span>
+              </span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if lbl.statutory_populations %}
+          <div class="lbl-section lbl-section-statpops">
+            <div class="lbl-section-title">Legally Recognized Populations</div>
+            <div class="bill-label-stakes-list">
+              {% for p in lbl.statutory_populations %}
+              <span class="lbl-stake lbl-valence-unclear" tabindex="0">
+                {{ p.label }}
+                <span class="lbl-stake-tooltip">{{ p.definition }}</span>
               </span>
               {% endfor %}
             </div>

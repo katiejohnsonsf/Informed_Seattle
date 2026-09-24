@@ -15,12 +15,16 @@ from server.legistar.label_schema import (
     POLICY_AREAS,
     RECORD_CLASSES,
     RELATIONS,
+    STATUTORY_POPULATION_DEFINITIONS,
     STATUTORY_POPULATIONS,
     VALENCES,
 )
 
 _POLICY_AREAS_STR = "\n  ".join(POLICY_AREAS)
-_STATUTORY_POPS_STR = "\n  ".join(STATUTORY_POPULATIONS)
+_STATUTORY_POPS_STR = "\n  ".join(
+    f"{slug} — {STATUTORY_POPULATION_DEFINITIONS[slug]}"
+    for slug in STATUTORY_POPULATIONS
+)
 
 _LABEL_PROMPT = """\
 You are classifying a Seattle City Council bill into a structured taxonomy.
@@ -41,13 +45,18 @@ Type: {bill_type}
 Only include stakes entries for groups genuinely affected (confidence ≥ 0.4).
 Constituencies: {constituencies}
 
+### Legally recognized populations
+Each has a precise Census/ACS or legal definition below. Match a population
+only if the bill's actual provisions fit that definition — not because the
+bill's subject sounds thematically related.
+  {statutory_pops}
+
 ### Output schema — return exactly this JSON shape, no extra keys:
 {{
   "record_class": "<one of: {record_classes}>",
   "resident_salient": <true or false>,
   "policy_area": "<one of:\n  {policy_areas}>",
-  "subject_terms": ["<Seattle City Clerk Thesaurus terms, e.g. RENTAL-HOUSING>"],
-  "statutory_populations": ["<zero or more of:\n  {statutory_pops}>"],
+  "statutory_populations": ["<zero or more slugs (the part before the — ) from the Legally recognized populations list above whose definition the bill actually fits>"],
   "stakes": [
     {{
       "group": "<constituency name from the list above>",
@@ -63,7 +72,6 @@ _FALLBACK_LABEL: dict[str, t.Any] = {
     "record_class": "other_administrative",
     "resident_salient": False,
     "policy_area": "governance-elections-and-ethics",
-    "subject_terms": [],
     "statutory_populations": [],
     "stakes": [],
 }
@@ -114,12 +122,6 @@ def _validate_label(raw: dict[str, t.Any]) -> dict[str, t.Any]:
         raw.get("policy_area", "governance-elections-and-ethics")
         if raw.get("policy_area") in POLICY_AREAS
         else "governance-elections-and-ethics"
-    )
-
-    # subject_terms — accept any strings, deduplicate, uppercase
-    terms = raw.get("subject_terms", [])
-    label["subject_terms"] = list(
-        dict.fromkeys(str(t).upper().strip() for t in terms if t)
     )
 
     # statutory_populations — filter to known values only

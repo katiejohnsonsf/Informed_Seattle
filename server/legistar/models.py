@@ -924,7 +924,11 @@ class CBLabel(models.Model):
     policy_area = models.CharField(max_length=80, blank=True)
     subject_terms = models.JSONField(
         default=list,
-        help_text="Seattle City Clerk Thesaurus terms.",
+        help_text=(
+            "Deprecated — no longer populated. Previously held AI-invented "
+            "terms styled after the Seattle City Clerk Thesaurus, but the "
+            "model was never given a bill's real indexed terms to work from."
+        ),
     )
 
     # Facet 2a — Statutory populations (legally grounded)

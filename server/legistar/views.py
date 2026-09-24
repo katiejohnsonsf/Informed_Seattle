@@ -961,6 +961,8 @@ def _label_context(legislation: Legislation) -> dict | None:
         PARTICIPATION_WINDOW_LABELS,
         POLICY_AREA_LABELS,
         RELATION_LABELS,
+        STATUTORY_POPULATION_DEFINITIONS,
+        STATUTORY_POPULATION_LABELS,
         VALENCE_LABELS,
     )
 
@@ -1009,10 +1011,16 @@ def _label_context(legislation: Legislation) -> dict | None:
         in ("comment-open", "hearing-scheduled", "amendable"),
         "resident_salient": label.resident_salient,
         "statutory_populations": [
-            p.replace("-", " ").title() for p in label.statutory_populations
+            {
+                "slug": p,
+                "label": STATUTORY_POPULATION_LABELS.get(
+                    p, p.replace("-", " ").title()
+                ),
+                "definition": STATUTORY_POPULATION_DEFINITIONS.get(p, ""),
+            }
+            for p in label.statutory_populations
         ],
         "stakes": stakes_display,
-        "subject_terms": label.subject_terms[:5],
         "committee": _committee_display(legislation),
         "committee_date": _committee_date(legislation),
         "council_members": _COUNCIL_MEMBER_CONTACTS,
