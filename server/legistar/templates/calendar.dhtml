@@ -169,8 +169,12 @@
     <select id="stakeholder-filter" class="stakeholder-filter-select">
       <option value="">All Bills</option>
       <option value="__none__">No &ldquo;Who&rsquo;s Affected&rdquo; Data</option>
-      {% for g in stakeholder_groups %}
-      <option value="{{ g.slug }}">{{ g.label }}</option>
+      {% for cat in stakeholder_groups %}
+      <optgroup label="{{ cat.category }}">
+        {% for g in cat.options %}
+        <option value="{{ g.slug }}">{{ g.label }}</option>
+        {% endfor %}
+      </optgroup>
       {% endfor %}
     </select>
   </div>

@@ -20,8 +20,30 @@
 {% endblock title %}
 {% block content %}
 
+  {% if stakeholder_groups %}
+  <div class="stakeholder-filter-bar">
+    <label for="stakeholder-filter" class="stakeholder-filter-label">View By Who is Impacted</label>
+    <select id="stakeholder-filter" class="stakeholder-filter-select">
+      <option value="">All Bills</option>
+      <option value="__none__">No &ldquo;Who&rsquo;s Affected&rdquo; Data</option>
+      {% for cat in stakeholder_groups %}
+      <optgroup label="{{ cat.category }}">
+        {% for g in cat.options %}
+        <option value="{{ g.slug }}">{{ g.label }}</option>
+        {% endfor %}
+      </optgroup>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="stakeholder-filter-breadcrumb" id="stakeholder-filter-breadcrumb" hidden>
+    Showing bills affecting: <strong id="stakeholder-filter-breadcrumb-label"></strong>
+    <button type="button" id="stakeholder-filter-clear" class="stakeholder-filter-clear">Clear filter &times;</button>
+  </div>
+  <p class="stakeholder-filter-empty" id="stakeholder-filter-empty" hidden>No bills currently show this group as affected.</p>
+  {% endif %}
+
   {% for entry in bill_entries %}
-    <article class="bill-entry" id="{{ entry.legislation.anchor_id }}" data-share-text="{{ entry.legislation.share_text }}">
+    <article class="bill-entry" id="{{ entry.legislation.anchor_id }}" data-share-text="{{ entry.legislation.share_text }}" data-stakeholder-groups="{{ entry.legislation.label.stakeholder_groups_attr }}">
       <h4 class="action-type">
         {{ entry.legislation.kind }}
         {% if entry.is_council_bill and entry.legislation.bill_status_label %}

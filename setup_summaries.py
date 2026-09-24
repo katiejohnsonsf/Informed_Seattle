@@ -2,6 +2,14 @@
 """
 Setup script to extract text from documents and generate summaries.
 This prepares the database for the web interface.
+
+By default, every matching Council Bill is considered (already-summarized
+ones are skipped, so a normal run only does real work on what's new).
+Set COUNCIL_BILL_LABEL_LIMIT to cap how many bills a single run considers.
+
+Usage:
+    python setup_summaries.py
+    COUNCIL_BILL_LABEL_LIMIT=10 python setup_summaries.py
 """
 import os
 import sys
@@ -25,22 +33,29 @@ from django.db.models import Q
 from server.lib.style import SUMMARIZATION_STYLES
 
 _COUNCIL_BILL_KIND = "Council Bill"
-_COUNCIL_BILL_LIMIT = 40
+# By default, every matching Council Bill is considered — already-summarized
+# ones are skipped throughout this script, so a normal run only does real
+# work on bills that are new since the last run. Set COUNCIL_BILL_LABEL_LIMIT
+# to cap how many bills (most recent first) a single run considers.
+_COUNCIL_BILL_LIMIT = (
+    int(os.environ["COUNCIL_BILL_LABEL_LIMIT"])
+    if os.environ.get("COUNCIL_BILL_LABEL_LIMIT")
+    else None
+)
 
 
 def _recent_council_bill_ids():
-    """Return the PKs of the N most recently crawled Council Bills.
+    """Return the PKs of matching Council Bills (see _COUNCIL_BILL_LIMIT).
 
     Includes both active Council Bills and enacted Ordinances that originated
     as Council Bills (identifiable by their 'CB XXXXXX' record number).
     """
-    return list(
-        Legislation.objects.filter(
-            Q(type__icontains=_COUNCIL_BILL_KIND) | Q(record_no__startswith="CB ")
-        )
-        .order_by("-id")[:_COUNCIL_BILL_LIMIT]
-        .values_list("id", flat=True)
-    )
+    qs = Legislation.objects.filter(
+        Q(type__icontains=_COUNCIL_BILL_KIND) | Q(record_no__startswith="CB ")
+    ).order_by("-id")
+    if _COUNCIL_BILL_LIMIT:
+        qs = qs[:_COUNCIL_BILL_LIMIT]
+    return list(qs.values_list("id", flat=True))
 
 
 def clear_failed_amendment_document_summaries():
@@ -361,7 +376,8 @@ def main():
         print("=" * 80)
         print("✓ PIPELINE COMPLETE")
         print("=" * 80)
-        print(f"\nCouncil Bills (last {_COUNCIL_BILL_LIMIT}):")
+        cb_scope = f"last {_COUNCIL_BILL_LIMIT}" if _COUNCIL_BILL_LIMIT else "all"
+        print(f"\nCouncil Bills ({cb_scope}):")
         print(f"  CB documents:         {cb_docs.count()}")
         print(f"  CB document summaries:{cb_doc_summaries}")
         print(f"  CB summaries:         {cb_summaries}/{len(recent_cb_ids)}")

@@ -72,6 +72,10 @@ jobs:
         shell: micromamba-shell {0}
         run: python setup_summaries.py
 
+      - name: Label Council Bills
+        shell: micromamba-shell {0}
+        run: python setup_labels.py
+
       - name: Fetch and persist council vote data
         shell: micromamba-shell {0}
         run: python manage.py fetch_vote_data

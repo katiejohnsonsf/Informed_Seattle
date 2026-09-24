@@ -1,14 +1,21 @@
 #!/usr/bin/env python
 """
-Labeling pipeline — classify recent Council Bills along the 4-facet schema.
+Labeling pipeline — classify Council Bills along the 4-facet schema.
 
 Run after setup_summaries.py so summaries exist to feed the labeling agent.
 If community profiles exist in the DB, each bill is labeled once per profile
 (community-specific stakes). A generic pass (no profile) always runs first.
 
+By default this considers every matching Council Bill, not just recent ones —
+already-labeled bills are skipped (see _label_one), so a normal run only ever
+does real work on bills that are new since the last run. Set
+COUNCIL_BILL_LABEL_LIMIT to cap how many bills a single run considers (most
+recent first), e.g. for a bounded/cautious test run.
+
 Usage:
     python setup_labels.py
-    python setup_labels.py --force    # re-label even if label already exists
+    python setup_labels.py --force              # re-label even if label already exists
+    COUNCIL_BILL_LABEL_LIMIT=10 python setup_labels.py
 """
 
 import os
@@ -26,17 +33,19 @@ from server.legistar.labeling.participation import derive_participation_window
 from server.legistar.models import CBLabel, CommunityProfile, Legislation
 
 _COUNCIL_BILL_KIND = "Council Bill"
-_COUNCIL_BILL_LIMIT = 40
+_COUNCIL_BILL_LIMIT = (
+    int(os.environ["COUNCIL_BILL_LABEL_LIMIT"])
+    if os.environ.get("COUNCIL_BILL_LABEL_LIMIT")
+    else None
+)
 _MODEL_VERSION = "gemma-4-31b"
 
 
-def _recent_council_bills():
-    return list(
-        Legislation.objects.filter(
-            Q(type__icontains=_COUNCIL_BILL_KIND) | Q(record_no__startswith="CB ")
-        )
-        .order_by("-id")[:_COUNCIL_BILL_LIMIT]
-    )
+def _council_bills_to_label():
+    qs = Legislation.objects.filter(
+        Q(type__icontains=_COUNCIL_BILL_KIND) | Q(record_no__startswith="CB ")
+    ).order_by("-id")
+    return list(qs[:_COUNCIL_BILL_LIMIT] if _COUNCIL_BILL_LIMIT else qs)
 
 
 def _label_one(
@@ -98,7 +107,7 @@ def run_labeling_pipeline(force: bool = False):
     print("Seattle City Council — CB Labeling Pipeline")
     print("=" * 80 + "\n")
 
-    bills = _recent_council_bills()
+    bills = _council_bills_to_label()
     profiles = list(CommunityProfile.objects.all())
 
     print(f"Bills to label:      {len(bills)}")

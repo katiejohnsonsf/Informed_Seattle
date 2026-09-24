@@ -1002,6 +1002,27 @@ def _committee_date(legislation: Legislation) -> object:
     return cd.on_agenda if cd.on_agenda >= today else None
 
 
+def _stakeholder_filter_groups() -> list[dict]:
+    """Who's-affected filter dropdown options: the full constituency
+    catalog, grouped by category, regardless of whether any bill on the
+    current page matches a given group — a stable, browsable taxonomy
+    rather than a list that shrinks to whatever happened to get labeled
+    recently. Selecting a group with no current match shows the page's
+    "no bills match" empty state."""
+    from server.legistar.label_schema import DEFAULT_CONSTITUENCIES
+
+    return [
+        {
+            "category": category,
+            "options": [
+                {"slug": slug, "label": slug.replace("-", " ").title()}
+                for slug in slugs
+            ],
+        }
+        for category, slugs in DEFAULT_CONSTITUENCIES.items()
+    ]
+
+
 def _label_context(legislation: Legislation) -> dict | None:
     """Return display-ready label data for a legislation, or None if unlabeled."""
     from server.legistar.district_demographics import district_impact_for_populations
@@ -1480,23 +1501,7 @@ def calendar(request, style: str):
     # Sort by meeting date descending (newest first)
     bill_entries.sort(key=lambda e: e["meeting_date"], reverse=True)
 
-    # Distinct "who's affected" groups actually present on this page, for the
-    # stakeholder filter dropdown — only groups that would actually match a
-    # visible bill are offered.
-    stakeholder_group_slugs = {
-        slug
-        for e in bill_entries
-        for slug in (e["legislation"]["label"] or {}).get(
-            "stakeholder_group_slugs", []
-        )
-    }
-    stakeholder_groups = sorted(
-        (
-            {"slug": slug, "label": slug.replace("-", " ").title()}
-            for slug in stakeholder_group_slugs
-        ),
-        key=lambda g: g["label"],
-    )
+    stakeholder_groups = _stakeholder_filter_groups()
 
     previous_bill_entries = _build_previous_bill_entries(
         style, exclude_pks={pk for (pk, _) in seen}
@@ -1652,6 +1657,7 @@ def _previous_legislation_context(style: SummarizationStyle, page: int) -> dict:
         "next_page_url": next_page_url,
         "calendar_url": f"{root}calendar/{style}/",
         "census_vintage": vintage_context(),
+        "stakeholder_groups": _stakeholder_filter_groups(),
     }
 
 
