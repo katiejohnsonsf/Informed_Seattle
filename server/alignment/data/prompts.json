@@ -3,7 +3,7 @@
   "updated_at": "2026-08-17",
   "prompts": {
     "original_proposal": {
-      "template": "Summarize in 2-3 sentences what this Seattle City Council bill originally proposed:\n\nTitle: {title}\n\nBill text (excerpt):\n{text_excerpt}\n\nWhat was originally proposed:",
+      "template": "Summarize in 2-3 sentences what this Seattle City Council bill originally proposed:\n\nTitle: {title}\n\nWhat was originally proposed:",
       "max_new_tokens": 200,
       "temperature": 0.3
     },
