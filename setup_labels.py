@@ -85,7 +85,6 @@ def _label_one(
             "record_class": label_data["record_class"],
             "resident_salient": label_data["resident_salient"],
             "policy_area": label_data["policy_area"],
-            "subject_terms": label_data["subject_terms"],
             "statutory_populations": label_data["statutory_populations"],
             "stakes": label_data["stakes"],
             "participation_window": participation_window,
