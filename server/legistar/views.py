@@ -1026,6 +1026,7 @@ def _label_context(legislation: Legislation) -> dict | None:
         stakes_display.append(
             {
                 "group": s["group"].replace("-", "‑"),
+                "group_slug": s["group"],
                 "relation_short": s["relation"],
                 "relation": RELATION_LABELS.get(s["relation"], s["relation"]),
                 "valence": s["valence"],
@@ -1070,6 +1071,8 @@ def _label_context(legislation: Legislation) -> dict | None:
             for p in label.statutory_populations
         ],
         "stakes": stakes_display,
+        "stakeholder_group_slugs": [s["group_slug"] for s in stakes_display],
+        "stakeholder_groups_attr": "|".join(s["group_slug"] for s in stakes_display),
         "district_impact": (
             district_impact := district_impact_for_populations(
                 label.statutory_populations
@@ -1477,6 +1480,24 @@ def calendar(request, style: str):
     # Sort by meeting date descending (newest first)
     bill_entries.sort(key=lambda e: e["meeting_date"], reverse=True)
 
+    # Distinct "who's affected" groups actually present on this page, for the
+    # stakeholder filter dropdown — only groups that would actually match a
+    # visible bill are offered.
+    stakeholder_group_slugs = {
+        slug
+        for e in bill_entries
+        for slug in (e["legislation"]["label"] or {}).get(
+            "stakeholder_group_slugs", []
+        )
+    }
+    stakeholder_groups = sorted(
+        (
+            {"slug": slug, "label": slug.replace("-", " ").title()}
+            for slug in stakeholder_group_slugs
+        ),
+        key=lambda g: g["label"],
+    )
+
     previous_bill_entries = _build_previous_bill_entries(
         style, exclude_pks={pk for (pk, _) in seen}
     )
@@ -1528,6 +1549,7 @@ def calendar(request, style: str):
             "next_crawl_at": next_crawl_at,
             "next_crawl_delta_days": next_crawl_delta_days,
             "census_vintage": vintage_context(),
+            "stakeholder_groups": stakeholder_groups,
         },
     )
 

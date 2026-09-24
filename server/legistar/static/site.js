@@ -545,6 +545,104 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+// ---- "View By Who is Impacted" stakeholder filter -------------------------
+//
+// Client-side filter over the bills already rendered on the page (no
+// server round-trip). "__none__" matches bills with no stakes at all
+// (unlabeled, or labeled with an empty "Who's affected" list).
+//
+// Each filter state is reflected in a ?affects= query param, so a filtered
+// view is a URL someone can copy and share — reloading it (or opening it
+// fresh) restores the same filter. Browser back/forward moves between
+// filter states too, via pushState + popstate.
+
+var STAKEHOLDER_FILTER_PARAM = "affects";
+
+function initStakeholderFilter() {
+  var select = document.getElementById("stakeholder-filter");
+  if (!select) return;
+
+  var entries = document.querySelectorAll(".bill-entry[data-stakeholder-groups]");
+  var breadcrumb = document.getElementById("stakeholder-filter-breadcrumb");
+  var breadcrumbLabel = document.getElementById("stakeholder-filter-breadcrumb-label");
+  var clearBtn = document.getElementById("stakeholder-filter-clear");
+  var emptyMsg = document.getElementById("stakeholder-filter-empty");
+
+  function applyFilter() {
+    var value = select.value;
+    var visibleCount = 0;
+
+    entries.forEach(function (entry) {
+      var groups = entry.dataset.stakeholderGroups
+        ? entry.dataset.stakeholderGroups.split("|")
+        : [];
+      var show =
+        value === "" ||
+        (value === "__none__" ? groups.length === 0 : groups.indexOf(value) !== -1);
+      // .bill-entry is an <article>, and site.css's HTML5-reset rule sets
+      // "article { display: block }" — an author rule, which beats the
+      // browser's default "[hidden] { display: none }" user-agent rule
+      // regardless of selector specificity. So the hidden *attribute*
+      // wouldn't actually hide it; set the inline style directly instead.
+      entry.style.display = show ? "" : "none";
+      if (show) visibleCount++;
+    });
+
+    if (value === "") {
+      breadcrumb.hidden = true;
+    } else {
+      breadcrumb.hidden = false;
+      breadcrumbLabel.textContent = select.options[select.selectedIndex].textContent;
+    }
+
+    emptyMsg.hidden = !(value !== "" && visibleCount === 0);
+  }
+
+  function pushUrlForValue(value) {
+    var url = new URL(window.location.href);
+    if (value) {
+      url.searchParams.set(STAKEHOLDER_FILTER_PARAM, value);
+    } else {
+      url.searchParams.delete(STAKEHOLDER_FILTER_PARAM);
+    }
+    if (url.href !== window.location.href) {
+      history.pushState({ stakeholderFilter: value }, "", url);
+    }
+  }
+
+  // Restore filter state from the URL on load, if it names a real option
+  // (an unrecognized value — a stale link, a typo — falls back to "All Bills"
+  // rather than leaving the dropdown on a phantom selection).
+  var initialValue = new URLSearchParams(window.location.search).get(
+    STAKEHOLDER_FILTER_PARAM
+  );
+  if (initialValue && select.querySelector('option[value="' + CSS.escape(initialValue) + '"]')) {
+    select.value = initialValue;
+  }
+  applyFilter();
+
+  select.addEventListener("change", function () {
+    pushUrlForValue(select.value);
+    applyFilter();
+  });
+
+  clearBtn.addEventListener("click", function () {
+    select.value = "";
+    pushUrlForValue("");
+    applyFilter();
+    select.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  window.addEventListener("popstate", function () {
+    var value = new URLSearchParams(window.location.search).get(STAKEHOLDER_FILTER_PARAM) || "";
+    select.value = select.querySelector('option[value="' + CSS.escape(value) + '"]') ? value : "";
+    applyFilter();
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initStakeholderFilter);
+
+
 async function shareBill(btn) {
   const article = btn.closest("article.bill-entry[id]");
   if (!article) return;
