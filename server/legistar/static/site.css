@@ -507,12 +507,6 @@ h4.action-type {
   padding-bottom: 0.5rem;
 }
 
-.bill-entry .bill-meta {
-  font-size: 0.9rem;
-  color: #666;
-  padding-bottom: 0.25rem;
-}
-
 .bill-entry time {
   display: block;
   padding-bottom: 0.25rem;
@@ -1734,6 +1728,7 @@ h4.action-type {
 /* Base tag style — matches .bill-status in spirit */
 .lbl-tag {
   display: inline-flex;
+  align-self: flex-start;
   align-items: center;
   gap: 0.3em;
   padding: 0.2em 0.6em;

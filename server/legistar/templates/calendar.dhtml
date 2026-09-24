@@ -186,7 +186,6 @@
             <span class="accordion-title">{{ entry.legislation.headline }}</span>
           </summary>
           <div class="accordion-body">
-            <p class="bill-meta">{{ entry.legislation.kind }} {{ entry.legislation.title }}</p>
             <time>Council Meeting Vote occurred on {{ entry.day_of_week }}, {{ entry.meeting_date|date:"F j, Y" }}</time>
             <p class="bill-committee">{{ entry.committee }}</p>
             <div class="content">
@@ -199,16 +198,10 @@
           <h1>
             <a href="{{ entry.legislation.url }}" target="_blank">{{ entry.legislation.headline }}</a>{{ entry.legislation.headline_eval_dot | safe }}
           </h1>
-          <p class="bill-meta">{{ entry.legislation.kind }} {{ entry.legislation.title }}</p>
-          {% if entry.key_date_type == "on_agenda" %}
-          <time class="bill-action-date"><span class="bill-action-date-label">On agenda:</span> {{ entry.meeting_date|date:"F j, Y" }}</time>
-          {% elif entry.key_date_type == "in_committee" %}
+          {% if entry.key_date_type == "in_committee" %}
           <p class="bill-action-date"><span class="bill-action-date-label">In committee review scheduled for</span> <a href="{{ entry.meeting_url }}" target="_blank">{{ entry.meeting_date|date:"F j, Y" }}</a></p>
           {% else %}
           <time class="bill-action-date"><span class="bill-action-date-label">Date of This Council Action:</span> {% if entry.legislation.vote_date %}{{ entry.legislation.vote_date|date:"F j, Y" }}{% else %}{{ entry.meeting_date|date:"F j, Y" }}{% endif %}</time>
-          {% endif %}
-          {% if entry.legislation.next_step %}
-          <p class="bill-next-step"><span class="bill-action-date-label">Next step:</span> {{ entry.legislation.next_step }}</p>
           {% endif %}
         </div>
 
@@ -253,7 +246,7 @@
               <div class="contact-council-list">
                 {% for m in lbl.council_members %}
                 <a href="mailto:{{ m.email }}" class="council-member-link">
-                  <span class="member-district-badge">{{ m.district_label }}</span>
+                  <span class="member-district-badge">{{ m.first_name }}</span>
                   <span class="member-name">{{ m.name }}</span>
                 </a>
                 {% endfor %}

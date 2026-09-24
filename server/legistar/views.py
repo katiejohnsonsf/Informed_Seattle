@@ -785,16 +785,63 @@ _WINDOW_DESCRIPTIONS = {
 # Seattle City Council members — district/position, display name, public email.
 # Sorted by seat number; update after each election cycle.
 _COUNCIL_MEMBER_CONTACTS = [
-    {"district": 1, "district_label": "District 1",        "name": "Rob Saka",               "email": "rob.saka@seattle.gov"},
-    {"district": 2, "district_label": "District 2",        "name": "Eddie Lin",               "email": "eddie.lin@seattle.gov"},
-    {"district": 3, "district_label": "District 3",        "name": "Joy Hollingsworth",       "email": "joy.hollingsworth@seattle.gov"},
-    {"district": 4, "district_label": "District 4",        "name": "Maritza Rivera",          "email": "maritza.rivera@seattle.gov"},
-    {"district": 5, "district_label": "District 5",        "name": "Debora Juarez",           "email": "debora.juarez@seattle.gov"},
-    {"district": 6, "district_label": "District 6",        "name": "Dan Strauss",             "email": "dan.strauss@seattle.gov"},
-    {"district": 7, "district_label": "District 7",        "name": "Robert Kettle",           "email": "robert.kettle@seattle.gov"},
-    {"district": 8, "district_label": "Position 8 At-Large", "name": "Alexis Mercedes Rinck", "email": "alexis.rinck@seattle.gov"},
-    {"district": 9, "district_label": "Position 9 At-Large", "name": "Dionne Foster",         "email": "dionne.foster@seattle.gov"},
+    {"district": 1, "first_name": "Rob",     "name": "Rob Saka",               "email": "rob.saka@seattle.gov"},
+    {"district": 2, "first_name": "Eddie",   "name": "Eddie Lin",               "email": "eddie.lin@seattle.gov"},
+    {"district": 3, "first_name": "Joy",     "name": "Joy Hollingsworth",       "email": "joy.hollingsworth@seattle.gov"},
+    {"district": 4, "first_name": "Maritza", "name": "Maritza Rivera",          "email": "maritza.rivera@seattle.gov"},
+    {"district": 5, "first_name": "Debora",  "name": "Debora Juarez",           "email": "debora.juarez@seattle.gov"},
+    {"district": 6, "first_name": "Dan",     "name": "Dan Strauss",             "email": "dan.strauss@seattle.gov"},
+    {"district": 7, "first_name": "Robert",  "name": "Robert Kettle",           "email": "robert.kettle@seattle.gov"},
+    {"district": 8, "first_name": "Alexis",  "name": "Alexis Mercedes Rinck",   "email": "alexis.rinck@seattle.gov"},
+    {"district": 9, "first_name": "Dionne",  "name": "Dionne Foster",           "email": "dionne.foster@seattle.gov"},
 ]
+
+_COUNCIL_MEMBERS_BY_DISTRICT = {m["district"]: m for m in _COUNCIL_MEMBER_CONTACTS}
+
+# Standing committee rosters — (role, district) pairs, chair first, then vice
+# chair, then remaining members. Keyed by the exact `controlling_body` string
+# Legistar reports for current-session bills. Update alongside
+# _COUNCIL_MEMBER_CONTACTS after each committee reassignment.
+_COMMITTEE_MEMBERSHIP = {
+    "Finance, Native Communities, and Tribal Governments Committee": [
+        ("Chair", 6), ("Vice Chair", 4), ("Member", 3), ("Member", 7), ("Member", 1),
+    ],
+    "Governance and Utilities Committee": [
+        ("Chair", 3), ("Vice Chair", 5), ("Member", 7), ("Member", 4), ("Member", 6),
+    ],
+    "Housing, Arts, and Civil Rights Committee": [
+        ("Chair", 9), ("Vice Chair", 2), ("Member", 3), ("Member", 5), ("Member", 8),
+    ],
+    "Human Services, Labor, and Economic Development Committee": [
+        ("Chair", 8), ("Vice Chair", 9), ("Member", 3), ("Member", 5), ("Member", 1),
+    ],
+    "Land Use and Sustainability Committee": [
+        ("Chair", 2), ("Vice Chair", 6), ("Member", 3), ("Member", 9), ("Member", 8),
+    ],
+    "Libraries, Education, and Neighborhoods Committee": [
+        ("Chair", 4), ("Vice Chair", 3), ("Member", 9), ("Member", 2), ("Member", 8),
+    ],
+    "Parks and City Light Committee": [
+        ("Chair", 5), ("Vice Chair", 7), ("Member", 4), ("Member", 1), ("Member", 6),
+    ],
+    "Public Safety Committee": [
+        ("Chair", 7), ("Vice Chair", 1), ("Member", 5), ("Member", 2), ("Member", 4),
+    ],
+    "Transportation, Waterfront, and Seattle Center Committee": [
+        ("Chair", 1), ("Vice Chair", 8), ("Member", 7), ("Member", 2), ("Member", 9),
+    ],
+}
+
+
+def _committee_roster(committee_name: str) -> list[dict]:
+    """Return [{role, name, email, first_name}, ...] for a committee, or []
+    if `committee_name` isn't a current standing committee we have a roster
+    for (e.g. Full Council, or a retired/renamed committee)."""
+    return [
+        {"role": role, **_COUNCIL_MEMBERS_BY_DISTRICT[district]}
+        for role, district in _COMMITTEE_MEMBERSHIP.get(committee_name, [])
+    ]
+
 
 _VALENCE_CLASS = {
     "benefit": "lbl-valence-benefit",
@@ -1021,9 +1068,9 @@ def _label_context(legislation: Legislation) -> dict | None:
             for p in label.statutory_populations
         ],
         "stakes": stakes_display,
-        "committee": _committee_display(legislation),
+        "committee": (committee := _committee_display(legislation)),
         "committee_date": _committee_date(legislation),
-        "council_members": _COUNCIL_MEMBER_CONTACTS,
+        "council_members": _committee_roster(committee) or _COUNCIL_MEMBER_CONTACTS,
     }
 
 
