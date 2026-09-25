@@ -23,7 +23,7 @@
   {% if stakeholder_filter.groups %}
   <div class="stakeholder-filter-bar">
     <label for="stakeholder-filter" class="stakeholder-filter-label">View By Who is Impacted</label>
-    <select id="stakeholder-filter" class="stakeholder-filter-select" data-filter-mode="static-page" data-filter-root="{{ previous_legislation_root }}">
+    <select id="stakeholder-filter" class="stakeholder-filter-select" data-filter-mode="static-page" data-filter-root="{{ site_root }}" data-filter-clear-root="{{ previous_legislation_root }}">
       <option value=""{% if not current_stakeholder_filter %} selected{% endif %}>All Bills ({{ stakeholder_filter.all_count }})</option>
       <option value="__none__"{% if current_stakeholder_filter == "__none__" %} selected{% endif %}>No &ldquo;Who&rsquo;s Affected&rdquo; Data ({{ stakeholder_filter.no_data_count }})</option>
       {% for cat in stakeholder_filter.groups %}

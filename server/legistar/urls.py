@@ -47,13 +47,6 @@ urlpatterns = [
         distill_func=views.distill_previous_legislation_pages,
         distill_file="previous-legislation/{style}/page/{page}/index.html",
     ),
-    distill_path(
-        "previous-legislation/<slug:style>/by/<slug:group>/",
-        views.previous_legislation_by_group,
-        name="previous_legislation_by_group",
-        distill_func=views.distill_previous_legislation_by_group,
-        distill_file="previous-legislation/{style}/by/{group}/index.html",
-    ),
     distill_path("", views.index, name="index", distill_file="index.html"),
     distill_path(
         "evaluations/",
@@ -70,4 +63,16 @@ urlpatterns = [
     path("community/new/", views_community.community_new, name="community_new"),
     path("community/<int:pk>/edit/", views_community.community_edit, name="community_edit"),
     path("community/<int:pk>/delete/", views_community.community_delete, name="community_delete"),
+    # Catch-all for "who's affected" filter pages (e.g. /renters/) — every
+    # named route above is a fixed string, so this can only ever match a
+    # bare single-segment path Django hasn't already routed. Must stay last:
+    # Django tries urlpatterns in order, and this pattern would otherwise
+    # swallow any of the fixed-string routes above it.
+    distill_path(
+        "<slug:group>/",
+        views.previous_legislation_by_group,
+        name="previous_legislation_by_group",
+        distill_func=views.distill_previous_legislation_by_group,
+        distill_file="{group}/index.html",
+    ),
 ]

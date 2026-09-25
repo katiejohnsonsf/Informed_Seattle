@@ -571,8 +571,12 @@ function initStakeholderFilter() {
   // states for this mode are rendered server-side, not by this script.
   if (select.dataset.filterMode === "static-page") {
     select.addEventListener("change", function () {
-      var root = select.dataset.filterRoot;
-      window.location.href = select.value ? root + "by/" + select.value + "/" : root;
+      // Selecting a group goes to its short top-level page (e.g. /renters/);
+      // clearing back to "All Bills" goes to the paginated, unfiltered
+      // previous-legislation index instead.
+      window.location.href = select.value
+        ? select.dataset.filterRoot + select.value + "/"
+        : select.dataset.filterClearRoot;
     });
     return;
   }
