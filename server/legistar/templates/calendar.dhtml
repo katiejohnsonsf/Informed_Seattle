@@ -119,7 +119,7 @@
       </div>
       <div>
         <div class="legend-facet-title">Who's affected &amp; how</div>
-        <p class="legend-facet-desc">Groups likely to have stakes in this bill. Hover a chip for the full relationship, including a plain-language description of the specific mechanism. Color shows whether the bill is a benefit, burden, or mixed for that group.</p>
+        <p class="legend-facet-desc">Groups likely to have stakes in this bill, each with a plain-language description of the specific mechanism. Color shows whether the bill is a benefit, burden, or mixed for that group.</p>
         <div class="legend-swatch-row">
           <span class="legend-swatch lbl-valence-benefit">Benefit</span>
           <span class="legend-swatch lbl-valence-burden">Burden</span>
@@ -127,8 +127,8 @@
           <span class="legend-swatch lbl-valence-unclear">Unclear</span>
         </div>
         <div class="legend-facet-meta">
-          <p><strong>Where this comes from:</strong> An AI model estimates, for each group your community tracks, whether the bill affects them and how — then attaches its own numeric confidence to that estimate. The plain-language description in each chip's tooltip is a separate model pass, instructed to name the specific mechanism in the bill's own text and stay consistent with the relation/valence/confidence already assigned, rather than repeat generic claims.</p>
-          <p><strong>Confidence:</strong> Shown explicitly, chip by chip. Hover any group to see the model's confidence as a percentage; only groups it scored 40% or higher are shown at all.</p>
+          <p><strong>Where this comes from:</strong> An AI model estimates, for each group your community tracks, whether the bill affects them and how — then attaches its own numeric confidence to that estimate. The plain-language description shown under each group is a separate model pass, instructed to name the specific mechanism in the bill's own text and stay consistent with the relation/valence/confidence already assigned, rather than repeat generic claims.</p>
+          <p><strong>Confidence:</strong> Shown explicitly on every card as a percentage; only groups scored 40% or higher are shown at all.</p>
           <p><strong>How to check it:</strong> Read the percentage before the claim. Treat anything under roughly 60% as a plausible-but-uncertain read rather than settled fact — a higher score means the model is more consistent, not that it has been verified against the bill text by a person.</p>
           <p><strong>Definitions:</strong> These groups (renters, drivers, small-business owners, and so on) aren't drawn from an outside standard — they're a starting list built for this tool, editable per-community through its setup form. No other entity's definitions apply; if a group feels too broad or too narrow, that's a modeling choice made here, not an external rule.</p>
         </div>
@@ -278,23 +278,34 @@
           </div>
           {% endif %}
 
-          {% if lbl.stakes %}
+          {% if lbl.stakes or lbl.district_impact %}
           <div class="lbl-section lbl-section-stakes">
             <div class="lbl-section-title">Who&rsquo;s affected &amp; how</div>
-            <div class="bill-label-stakes-list">
+            {% if lbl.stakes %}
+            <div class="bill-label-stakes-cards">
               {% for s in lbl.stakes %}
-              <span class="lbl-stake {{ s.valence_class }}" tabindex="0">
-                {{ s.group }}
-                <span class="lbl-stake-tooltip">
-                  <strong>{{ s.group }}</strong><br>
-                  {{ s.relation }}<br>
-                  {{ s.directness }}<br>
-                  Confidence: {{ s.confidence }}%
-                  {% if s.description %}<span class="lbl-stake-tooltip-desc">{{ s.description }}</span>{% endif %}
-                </span>
-              </span>
+              <div class="lbl-stake-card">
+                <div class="lbl-stake-card-header">
+                  <span class="lbl-stake {{ s.valence_class }}">{{ s.group }}</span>
+                  <span class="lbl-stake-meta">{{ s.relation_short }} &middot; {{ s.directness_short }} &middot; {{ s.confidence }}% confidence</span>
+                </div>
+                {% if s.description %}
+                <p class="lbl-stake-description">{{ s.description }}</p>
+                {% endif %}
+              </div>
               {% endfor %}
             </div>
+            {% endif %}
+            {% if lbl.district_impact %}
+            <div class="map-subheading">Population Density by District</div>
+            <div class="bill-density-map">
+              <div class="density-tabs"></div>
+              <div class="bill-density-canvas"
+                   data-populations="{{ lbl.district_impact_json }}"
+                   aria-label="Population density by council district"></div>
+              <div class="bill-density-legend"></div>
+            </div>
+            {% endif %}
           </div>
           {% endif %}
 
@@ -341,30 +352,13 @@
           </table>
           {% endif %}
 
-          <div class="bill-maps-dual">
-            <div class="bill-map-col">
-              <div class="bill-map-col-title">How the Council Voted</div>
-              <div class="bill-vote-map">
-                <div class="bill-map-canvas"
-                     data-votes="{{ entry.legislation.district_votes_json }}"
-                     data-amendments="{{ entry.legislation.amendments_json }}"
-                     data-vote-status="{{ entry.legislation.vote_map_status }}"
-                     data-pending-label="{{ entry.legislation.vote_map_pending_label }}"
-                     aria-label="Seattle council district vote map"></div>
-              </div>
-            </div>
-            {% if entry.legislation.label.district_impact %}
-            <div class="bill-map-col">
-              <div class="bill-map-col-title">Who's Affected, by District</div>
-              <div class="bill-density-map">
-                <div class="density-tabs"></div>
-                <div class="bill-density-canvas"
-                     data-populations="{{ entry.legislation.label.district_impact_json }}"
-                     aria-label="Population density by council district"></div>
-                <div class="bill-density-legend"></div>
-              </div>
-            </div>
-            {% endif %}
+          <div class="bill-vote-map">
+            <div class="bill-map-canvas"
+                 data-votes="{{ entry.legislation.district_votes_json }}"
+                 data-amendments="{{ entry.legislation.amendments_json }}"
+                 data-vote-status="{{ entry.legislation.vote_map_status }}"
+                 data-pending-label="{{ entry.legislation.vote_map_pending_label }}"
+                 aria-label="Seattle council district vote map"></div>
           </div>
 
           {% if entry.legislation.amendments %}

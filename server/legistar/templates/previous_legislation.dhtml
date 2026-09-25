@@ -144,23 +144,34 @@
           </div>
           {% endif %}
 
-          {% if lbl.stakes %}
+          {% if lbl.stakes or lbl.district_impact %}
           <div class="lbl-section lbl-section-stakes">
             <div class="lbl-section-title">Who&rsquo;s affected &amp; how</div>
-            <div class="bill-label-stakes-list">
+            {% if lbl.stakes %}
+            <div class="bill-label-stakes-cards">
               {% for s in lbl.stakes %}
-              <span class="lbl-stake {{ s.valence_class }}" tabindex="0">
-                {{ s.group }}
-                <span class="lbl-stake-tooltip">
-                  <strong>{{ s.group }}</strong><br>
-                  {{ s.relation }}<br>
-                  {{ s.directness }}<br>
-                  Confidence: {{ s.confidence }}%
-                  {% if s.description %}<span class="lbl-stake-tooltip-desc">{{ s.description }}</span>{% endif %}
-                </span>
-              </span>
+              <div class="lbl-stake-card">
+                <div class="lbl-stake-card-header">
+                  <span class="lbl-stake {{ s.valence_class }}">{{ s.group }}</span>
+                  <span class="lbl-stake-meta">{{ s.relation_short }} &middot; {{ s.directness_short }} &middot; {{ s.confidence }}% confidence</span>
+                </div>
+                {% if s.description %}
+                <p class="lbl-stake-description">{{ s.description }}</p>
+                {% endif %}
+              </div>
               {% endfor %}
             </div>
+            {% endif %}
+            {% if lbl.district_impact %}
+            <div class="map-subheading">Population Density by District</div>
+            <div class="bill-density-map">
+              <div class="density-tabs"></div>
+              <div class="bill-density-canvas"
+                   data-populations="{{ lbl.district_impact_json }}"
+                   aria-label="Population density by council district"></div>
+              <div class="bill-density-legend"></div>
+            </div>
+            {% endif %}
           </div>
           {% endif %}
 
@@ -207,30 +218,13 @@
           </table>
           {% endif %}
 
-          <div class="bill-maps-dual">
-            <div class="bill-map-col">
-              <div class="bill-map-col-title">How the Council Voted</div>
-              <div class="bill-vote-map">
-                <div class="bill-map-canvas"
-                     data-votes="{{ entry.legislation.district_votes_json }}"
-                     data-amendments="{{ entry.legislation.amendments_json }}"
-                     data-vote-status="{{ entry.legislation.vote_map_status }}"
-                     data-pending-label="{{ entry.legislation.vote_map_pending_label }}"
-                     aria-label="Seattle council district vote map"></div>
-              </div>
-            </div>
-            {% if entry.legislation.label.district_impact %}
-            <div class="bill-map-col">
-              <div class="bill-map-col-title">Who's Affected, by District</div>
-              <div class="bill-density-map">
-                <div class="density-tabs"></div>
-                <div class="bill-density-canvas"
-                     data-populations="{{ entry.legislation.label.district_impact_json }}"
-                     aria-label="Population density by council district"></div>
-                <div class="bill-density-legend"></div>
-              </div>
-            </div>
-            {% endif %}
+          <div class="bill-vote-map">
+            <div class="bill-map-canvas"
+                 data-votes="{{ entry.legislation.district_votes_json }}"
+                 data-amendments="{{ entry.legislation.amendments_json }}"
+                 data-vote-status="{{ entry.legislation.vote_map_status }}"
+                 data-pending-label="{{ entry.legislation.vote_map_pending_label }}"
+                 aria-label="Seattle council district vote map"></div>
           </div>
 
           {% if entry.legislation.amendments %}

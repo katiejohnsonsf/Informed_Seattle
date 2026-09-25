@@ -839,31 +839,14 @@ h4.action-type {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-/* ---- Dual map layout: vote map + population-density map side by side ---- */
-.bill-maps-dual {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.bill-map-col {
-  flex: 1 1 280px;
-  min-width: 0;
-}
-
-.bill-map-col .bill-vote-map,
-.bill-map-col .bill-density-map {
-  margin-top: 0;
-}
-
-.bill-map-col-title {
+/* Small uppercase caption above a map, e.g. inside "Who's affected & how" */
+.map-subheading {
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #6b7280;
-  margin-bottom: 0.5rem;
+  margin: 0.75rem 0 0.5rem;
 }
 
 .bill-density-map {
@@ -962,11 +945,6 @@ h4.action-type {
   color: #581c87;
 }
 
-@media (max-width: 640px) {
-  .bill-maps-dual {
-    flex-direction: column;
-  }
-}
 
 /* At-large member vote row (displayed above the map) */
 .bill-vote-at-large {
@@ -1977,6 +1955,41 @@ h4.action-type {
   gap: 0.35rem;
 }
 
+/* Stakes cards — each group's impact shown as visible text, not a hover
+   tooltip, so it works on touch devices and isn't easy to miss. */
+.bill-label-stakes-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.lbl-stake-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+}
+
+.lbl-stake-card-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.lbl-stake-meta {
+  font-size: 0.68rem;
+  color: #9ca3af;
+}
+
+.lbl-stake-description {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #374151;
+  margin: 0;
+}
+
 .lbl-stake {
   display: inline-flex;
   align-items: baseline;
@@ -2020,14 +2033,6 @@ h4.action-type {
   z-index: 200;
 }
 
-.lbl-stake-tooltip-desc {
-  display: block;
-  margin-top: 0.4rem;
-  padding-top: 0.4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  font-style: italic;
-  color: #e0e7ff;
-}
 .lbl-stake-tooltip::after {
   content: "";
   position: absolute;
@@ -2480,6 +2485,13 @@ h4.action-type {
   :root:not([data-theme="light"]) .lbl-section-statpops {
     box-shadow: inset 0 -1px 0 #374151;
   }
+  :root:not([data-theme="light"]) .lbl-stake-card {
+    background: #111827;
+    border-color: #374151;
+  }
+  :root:not([data-theme="light"]) .lbl-stake-description {
+    color: #d1d5db;
+  }
   :root:not([data-theme="light"]) .lbl-committee-name {
     color: #d1d5db;
   }
@@ -2544,6 +2556,13 @@ h4.action-type {
 :root[data-theme="dark"] .lbl-section-window,
 :root[data-theme="dark"] .lbl-section-statpops {
   box-shadow: inset 0 -1px 0 #374151;
+}
+:root[data-theme="dark"] .lbl-stake-card {
+  background: #111827;
+  border-color: #374151;
+}
+:root[data-theme="dark"] .lbl-stake-description {
+  color: #d1d5db;
 }
 :root[data-theme="dark"] .lbl-committee-name {
   color: #d1d5db;
