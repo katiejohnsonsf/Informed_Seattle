@@ -562,6 +562,21 @@ function initStakeholderFilter() {
   var select = document.getElementById("stakeholder-filter");
   if (!select) return;
 
+  // previous_legislation.dhtml pages are pre-built static files, one per
+  // group (see distill_previous_legislation_by_group) — there's no live
+  // server to filter a paginated list per-request. So instead of toggling
+  // .bill-entry visibility in place, changing the dropdown here just
+  // navigates to the matching pre-built page, which already contains every
+  // matching bill across the site's full history. The breadcrumb/empty
+  // states for this mode are rendered server-side, not by this script.
+  if (select.dataset.filterMode === "static-page") {
+    select.addEventListener("change", function () {
+      var root = select.dataset.filterRoot;
+      window.location.href = select.value ? root + "by/" + select.value + "/" : root;
+    });
+    return;
+  }
+
   var entries = document.querySelectorAll(".bill-entry[data-stakeholder-groups]");
   var breadcrumb = document.getElementById("stakeholder-filter-breadcrumb");
   var breadcrumbLabel = document.getElementById("stakeholder-filter-breadcrumb-label");

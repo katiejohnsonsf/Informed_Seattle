@@ -23,27 +23,31 @@
   {% if stakeholder_groups %}
   <div class="stakeholder-filter-bar">
     <label for="stakeholder-filter" class="stakeholder-filter-label">View By Who is Impacted</label>
-    <select id="stakeholder-filter" class="stakeholder-filter-select">
-      <option value="">All Bills</option>
-      <option value="__none__">No &ldquo;Who&rsquo;s Affected&rdquo; Data</option>
+    <select id="stakeholder-filter" class="stakeholder-filter-select" data-filter-mode="static-page" data-filter-root="{{ previous_legislation_root }}">
+      <option value=""{% if not current_stakeholder_filter %} selected{% endif %}>All Bills</option>
+      <option value="__none__"{% if current_stakeholder_filter == "__none__" %} selected{% endif %}>No &ldquo;Who&rsquo;s Affected&rdquo; Data</option>
       {% for cat in stakeholder_groups %}
       <optgroup label="{{ cat.category }}">
         {% for g in cat.options %}
-        <option value="{{ g.slug }}">{{ g.label }}</option>
+        <option value="{{ g.slug }}"{% if current_stakeholder_filter == g.slug %} selected{% endif %}>{{ g.label }}</option>
         {% endfor %}
       </optgroup>
       {% endfor %}
     </select>
   </div>
-  <div class="stakeholder-filter-breadcrumb" id="stakeholder-filter-breadcrumb" hidden>
-    Showing bills affecting: <strong id="stakeholder-filter-breadcrumb-label"></strong>
-    <button type="button" id="stakeholder-filter-clear" class="stakeholder-filter-clear">Clear filter &times;</button>
+  {% if current_stakeholder_filter %}
+  <div class="stakeholder-filter-breadcrumb">
+    Showing every past bill affecting: <strong>{{ stakeholder_filter_label }}</strong>
+    <a href="{{ previous_legislation_root }}" class="stakeholder-filter-clear">Clear filter &times;</a>
   </div>
-  <p class="stakeholder-filter-empty" id="stakeholder-filter-empty" hidden>No bills currently show this group as affected.</p>
+  {% if not bill_entries %}
+  <p class="stakeholder-filter-empty">No bills currently show this group as affected.</p>
+  {% endif %}
+  {% endif %}
   {% endif %}
 
   {% for entry in bill_entries %}
-    <article class="bill-entry" id="{{ entry.legislation.anchor_id }}" data-share-text="{{ entry.legislation.share_text }}" data-stakeholder-groups="{{ entry.legislation.label.stakeholder_groups_attr }}">
+    <article class="bill-entry" id="{{ entry.legislation.anchor_id }}" data-share-text="{{ entry.legislation.share_text }}">
       <h4 class="action-type">
         {{ entry.legislation.kind }}
         {% if entry.is_council_bill and entry.legislation.bill_status_label %}
