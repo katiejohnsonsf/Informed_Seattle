@@ -1002,25 +1002,15 @@ def _committee_date(legislation: Legislation) -> object:
     return cd.on_agenda if cd.on_agenda >= today else None
 
 
-def _stakeholder_filter_groups() -> list[dict]:
-    """Who's-affected filter dropdown options: the full constituency
-    catalog, grouped by category, regardless of whether any bill on the
-    current page matches a given group — a stable, browsable taxonomy
-    rather than a list that shrinks to whatever happened to get labeled
-    recently. Selecting a group with no current match shows the page's
-    "no bills match" empty state."""
-    from server.legistar.label_schema import DEFAULT_CONSTITUENCIES
-
-    return [
-        {
-            "category": category,
-            "options": [
-                {"slug": slug, "label": slug.replace("-", " ").title()}
-                for slug in slugs
-            ],
-        }
-        for category, slugs in DEFAULT_CONSTITUENCIES.items()
-    ]
+def _stakeholder_filter_matches(entry: dict, group: str) -> bool:
+    """Whether a bill_entries[i] dict's label carries the given stakeholder
+    group. "__none__" matches bills with no stakes at all (unlabeled, or
+    labeled with an empty "Who's affected" list) — the same semantics as
+    the client-side filter on the calendar page."""
+    slugs = (entry["legislation"]["label"] or {}).get("stakeholder_group_slugs", [])
+    if group == "__none__":
+        return not slugs
+    return group in slugs
 
 
 def _stakeholder_filter_label(group: str) -> str:
@@ -1031,15 +1021,39 @@ def _stakeholder_filter_label(group: str) -> str:
     return group.replace("-", " ").title()
 
 
-def _stakeholder_filter_matches(entry: dict, group: str) -> bool:
-    """Whether a bill_entries[i] dict's label carries the given stakeholder
-    group. "__none__" matches bills with no stakes at all (unlabeled, or
-    labeled with an empty "Who's affected" list) — the same semantics as
-    the client-side filter on the calendar page."""
-    slugs = (entry["legislation"]["label"] or {}).get("stakeholder_group_slugs", [])
-    if group == "__none__":
-        return not slugs
-    return group in slugs
+def _stakeholder_filter_context(entries: list[dict]) -> dict:
+    """Who's-affected filter dropdown data: the full constituency catalog,
+    grouped by category, regardless of whether any bill in `entries`
+    matches a given group — a stable, browsable taxonomy rather than a
+    list that shrinks to whatever happened to get labeled recently. Each
+    option carries a count of how many of `entries` it actually matches,
+    so the dropdown shows real numbers (e.g. "Renters (27)") rather than
+    requiring a guess-and-check pick."""
+    from server.legistar.label_schema import DEFAULT_CONSTITUENCIES
+
+    groups = [
+        {
+            "category": category,
+            "options": [
+                {
+                    "slug": slug,
+                    "label": slug.replace("-", " ").title(),
+                    "count": sum(
+                        1 for e in entries if _stakeholder_filter_matches(e, slug)
+                    ),
+                }
+                for slug in slugs
+            ],
+        }
+        for category, slugs in DEFAULT_CONSTITUENCIES.items()
+    ]
+    return {
+        "groups": groups,
+        "all_count": len(entries),
+        "no_data_count": sum(
+            1 for e in entries if _stakeholder_filter_matches(e, "__none__")
+        ),
+    }
 
 
 def _label_context(legislation: Legislation) -> dict | None:
@@ -1520,7 +1534,7 @@ def calendar(request, style: str):
     # Sort by meeting date descending (newest first)
     bill_entries.sort(key=lambda e: e["meeting_date"], reverse=True)
 
-    stakeholder_groups = _stakeholder_filter_groups()
+    stakeholder_filter = _stakeholder_filter_context(bill_entries)
 
     previous_bill_entries = _build_previous_bill_entries(
         style, exclude_pks={pk for (pk, _) in seen}
@@ -1573,7 +1587,7 @@ def calendar(request, style: str):
             "next_crawl_at": next_crawl_at,
             "next_crawl_delta_days": next_crawl_delta_days,
             "census_vintage": vintage_context(),
-            "stakeholder_groups": stakeholder_groups,
+            "stakeholder_filter": stakeholder_filter,
         },
     )
 
@@ -1676,7 +1690,7 @@ def _previous_legislation_context(style: SummarizationStyle, page: int) -> dict:
         "next_page_url": next_page_url,
         "calendar_url": f"{root}calendar/{style}/",
         "census_vintage": vintage_context(),
-        "stakeholder_groups": _stakeholder_filter_groups(),
+        "stakeholder_filter": _stakeholder_filter_context(all_entries),
         "current_stakeholder_filter": "",
         "stakeholder_filter_label": "",
         "previous_legislation_root": f"{root}previous-legislation/{style}/",
@@ -1721,7 +1735,7 @@ def previous_legislation_by_group(request, style: str, group: str):
             "next_page_url": None,
             "calendar_url": f"{root}calendar/{style}/",
             "census_vintage": vintage_context(),
-            "stakeholder_groups": _stakeholder_filter_groups(),
+            "stakeholder_filter": _stakeholder_filter_context(all_entries),
             "current_stakeholder_filter": group,
             "stakeholder_filter_label": _stakeholder_filter_label(group),
             "previous_legislation_root": f"{root}previous-legislation/{style}/",

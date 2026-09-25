@@ -163,16 +163,16 @@
     </div>
   </details>
 
-  {% if stakeholder_groups %}
+  {% if stakeholder_filter.groups %}
   <div class="stakeholder-filter-bar">
     <label for="stakeholder-filter" class="stakeholder-filter-label">View By Who is Impacted</label>
     <select id="stakeholder-filter" class="stakeholder-filter-select">
-      <option value="">All Bills</option>
-      <option value="__none__">No &ldquo;Who&rsquo;s Affected&rdquo; Data</option>
-      {% for cat in stakeholder_groups %}
+      <option value="">All Bills ({{ stakeholder_filter.all_count }})</option>
+      <option value="__none__">No &ldquo;Who&rsquo;s Affected&rdquo; Data ({{ stakeholder_filter.no_data_count }})</option>
+      {% for cat in stakeholder_filter.groups %}
       <optgroup label="{{ cat.category }}">
         {% for g in cat.options %}
-        <option value="{{ g.slug }}">{{ g.label }}</option>
+        <option value="{{ g.slug }}">{{ g.label }} ({{ g.count }})</option>
         {% endfor %}
       </optgroup>
       {% endfor %}
