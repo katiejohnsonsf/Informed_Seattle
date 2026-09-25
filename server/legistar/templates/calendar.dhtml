@@ -167,7 +167,7 @@
   <div class="stakeholder-filter-bar">
     <label for="stakeholder-filter" class="stakeholder-filter-label">View By Who is Impacted</label>
     <select id="stakeholder-filter" class="stakeholder-filter-select">
-      <option value="">All Bills ({{ stakeholder_filter.all_count }})</option>
+      <option value="">All This Week's Bills ({{ stakeholder_filter.all_count }})</option>
       <option value="__none__">No &ldquo;Who&rsquo;s Affected&rdquo; Data ({{ stakeholder_filter.no_data_count }})</option>
       {% for cat in stakeholder_filter.groups %}
       <optgroup label="{{ cat.category }}">
