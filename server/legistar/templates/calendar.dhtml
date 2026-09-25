@@ -119,7 +119,7 @@
       </div>
       <div>
         <div class="legend-facet-title">Who's affected &amp; how</div>
-        <p class="legend-facet-desc">Groups likely to have stakes in this bill. Hover a chip for the full relationship. Color shows whether the bill is a benefit, burden, or mixed for that group.</p>
+        <p class="legend-facet-desc">Groups likely to have stakes in this bill. Hover a chip for the full relationship, including a plain-language description of the specific mechanism. Color shows whether the bill is a benefit, burden, or mixed for that group.</p>
         <div class="legend-swatch-row">
           <span class="legend-swatch lbl-valence-benefit">Benefit</span>
           <span class="legend-swatch lbl-valence-burden">Burden</span>
@@ -127,7 +127,7 @@
           <span class="legend-swatch lbl-valence-unclear">Unclear</span>
         </div>
         <div class="legend-facet-meta">
-          <p><strong>Where this comes from:</strong> An AI model estimates, for each group your community tracks, whether the bill affects them and how — then attaches its own numeric confidence to that estimate.</p>
+          <p><strong>Where this comes from:</strong> An AI model estimates, for each group your community tracks, whether the bill affects them and how — then attaches its own numeric confidence to that estimate. The plain-language description in each chip's tooltip is a separate model pass, instructed to name the specific mechanism in the bill's own text and stay consistent with the relation/valence/confidence already assigned, rather than repeat generic claims.</p>
           <p><strong>Confidence:</strong> Shown explicitly, chip by chip. Hover any group to see the model's confidence as a percentage; only groups it scored 40% or higher are shown at all.</p>
           <p><strong>How to check it:</strong> Read the percentage before the claim. Treat anything under roughly 60% as a plausible-but-uncertain read rather than settled fact — a higher score means the model is more consistent, not that it has been verified against the bill text by a person.</p>
           <p><strong>Definitions:</strong> These groups (renters, drivers, small-business owners, and so on) aren't drawn from an outside standard — they're a starting list built for this tool, editable per-community through its setup form. No other entity's definitions apply; if a group feels too broad or too narrow, that's a modeling choice made here, not an external rule.</p>
@@ -290,6 +290,7 @@
                   {{ s.relation }}<br>
                   {{ s.directness }}<br>
                   Confidence: {{ s.confidence }}%
+                  {% if s.description %}<span class="lbl-stake-tooltip-desc">{{ s.description }}</span>{% endif %}
                 </span>
               </span>
               {% endfor %}

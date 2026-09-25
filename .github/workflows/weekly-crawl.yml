@@ -14,6 +14,10 @@ on:
         description: 'Max summaries to evaluate. Defaults to 20. Use 0 for no limit.'
         required: false
         default: '20'
+      relabel_all:
+        description: 'Force re-labeling of every Council Bill (setup_labels.py --force), not just newly-labeled ones.'
+        required: false
+        default: 'false'
 
 jobs:
   crawl-and-publish:
@@ -74,7 +78,16 @@ jobs:
 
       - name: Label Council Bills
         shell: micromamba-shell {0}
-        run: python setup_labels.py
+        run: |
+          if [ "${{ inputs.relabel_all }}" = "true" ]; then
+            python setup_labels.py --force
+          else
+            python setup_labels.py
+          fi
+
+      - name: Generate stakeholder impact descriptions
+        shell: micromamba-shell {0}
+        run: python setup_stake_descriptions.py
 
       - name: Fetch and persist council vote data
         shell: micromamba-shell {0}

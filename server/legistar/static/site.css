@@ -2012,12 +2012,21 @@ h4.action-type {
   padding: 0.45rem 0.65rem;
   border-radius: 6px;
   width: max-content;
-  max-width: 220px;
+  max-width: 320px;
   white-space: normal;
   text-align: left;
   pointer-events: none;
   transition: opacity 0.15s ease;
   z-index: 200;
+}
+
+.lbl-stake-tooltip-desc {
+  display: block;
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-style: italic;
+  color: #e0e7ff;
 }
 .lbl-stake-tooltip::after {
   content: "";

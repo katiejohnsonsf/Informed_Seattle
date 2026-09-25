@@ -219,8 +219,7 @@ def label_legislation(
     # Gather the bill's summary text (prefer structured body, fall back to title)
     summary_text = legislation.title
     try:
-        summaries = legislation.legistar_summaries  # type: ignore[attr-defined]
-        leg_summary = summaries.filter(style="what_changed").first()
+        leg_summary = legislation.summaries.filter(style="what_changed").first()
         if leg_summary and leg_summary.body:
             summary_text = leg_summary.body[:2000]
     except Exception:

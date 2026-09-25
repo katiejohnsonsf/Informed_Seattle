@@ -156,6 +156,7 @@
                   {{ s.relation }}<br>
                   {{ s.directness }}<br>
                   Confidence: {{ s.confidence }}%
+                  {% if s.description %}<span class="lbl-stake-tooltip-desc">{{ s.description }}</span>{% endif %}
                 </span>
               </span>
               {% endfor %}

@@ -1093,6 +1093,7 @@ def _label_context(legislation: Legislation) -> dict | None:
                 ),
                 "directness_short": s["directness"],
                 "confidence": round(s["confidence"] * 100),
+                "description": s.get("description", ""),
             }
         )
 
