@@ -163,16 +163,24 @@
     </div>
   </details>
 
-  {% if stakeholder_filter.groups %}
+  {% if stakeholder_filter_week.groups %}
+  <div class="stakeholder-scope-toggle" role="group" aria-label="Bill scope">
+    <button type="button" class="scope-toggle-btn scope-toggle-btn-active" data-scope="week">This Week</button>
+    <button type="button" class="scope-toggle-btn" data-scope="all">All CBs in Database</button>
+  </div>
   <div class="stakeholder-filter-bar">
     <label for="stakeholder-filter" class="stakeholder-filter-label">View By Who is Impacted</label>
-    <select id="stakeholder-filter" class="stakeholder-filter-select">
-      <option value="">All This Week's Bills ({{ stakeholder_filter.all_count }})</option>
-      <option value="__none__">No &ldquo;Who&rsquo;s Affected&rdquo; Data ({{ stakeholder_filter.no_data_count }})</option>
-      {% for cat in stakeholder_filter.groups %}
+    <select id="stakeholder-filter" class="stakeholder-filter-select"
+            data-scope-root="{{ site_root }}"
+            data-scope-all-browse-url="{{ site_root }}previous-legislation/{{ style }}/"
+            data-counts-week='{{ stakeholder_filter_week.counts_json }}'
+            data-counts-all='{{ stakeholder_filter_all.counts_json }}'>
+      <option value="" data-label-week="This Week&rsquo;s Bills" data-label-all="All CBs in Database">This Week&rsquo;s Bills ({{ stakeholder_filter_week.all_count }})</option>
+      <option value="__none__" data-label="No &ldquo;Who&rsquo;s Affected&rdquo; Data">No &ldquo;Who&rsquo;s Affected&rdquo; Data ({{ stakeholder_filter_week.no_data_count }})</option>
+      {% for cat in stakeholder_filter_week.groups %}
       <optgroup label="{{ cat.category }}">
         {% for g in cat.options %}
-        <option value="{{ g.slug }}">{{ g.label }} ({{ g.count }})</option>
+        <option value="{{ g.slug }}" data-label="{{ g.label }}">{{ g.label }} ({{ g.count }})</option>
         {% endfor %}
       </optgroup>
       {% endfor %}

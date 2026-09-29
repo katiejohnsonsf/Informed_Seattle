@@ -587,6 +587,64 @@ function initStakeholderFilter() {
   var clearBtn = document.getElementById("stakeholder-filter-clear");
   var emptyMsg = document.getElementById("stakeholder-filter-empty");
 
+  // ---- "This Week" / "All CBs in Database" scope toggle -------------------
+  //
+  // This page's DOM only ever contains this week's bills, so scope="all"
+  // can't filter in place — it re-labels the dropdown with database-wide
+  // counts (from data-counts-all) and, on change, navigates to the matching
+  // pre-built page (/<group>/ or the previous-legislation index) instead of
+  // toggling .bill-entry visibility.
+  var scopeToggle = document.querySelector(".stakeholder-scope-toggle");
+  var scope = "week";
+
+  if (scopeToggle && select.dataset.scopeRoot) {
+    var scopeButtons = scopeToggle.querySelectorAll(".scope-toggle-btn");
+    var countsByScope = {
+      week: JSON.parse(select.dataset.countsWeek || "{}"),
+      all: JSON.parse(select.dataset.countsAll || "{}"),
+    };
+
+    function relabelOptions() {
+      var counts = countsByScope[scope];
+      Array.prototype.forEach.call(select.options, function (opt) {
+        var count = counts.hasOwnProperty(opt.value) ? counts[opt.value] : 0;
+        var label =
+          scope === "all" && opt.dataset.labelAll
+            ? opt.dataset.labelAll
+            : scope === "week" && opt.dataset.labelWeek
+            ? opt.dataset.labelWeek
+            : opt.dataset.label;
+        opt.textContent = label + " (" + count + ")";
+      });
+    }
+
+    scopeToggle.addEventListener("click", function (event) {
+      var btn = event.target.closest(".scope-toggle-btn");
+      if (!btn || btn.dataset.scope === scope) return;
+
+      scope = btn.dataset.scope;
+      scopeButtons.forEach(function (b) {
+        b.classList.toggle("scope-toggle-btn-active", b === btn);
+      });
+      relabelOptions();
+
+      // Switching to "all" while a specific group is already selected jumps
+      // straight to that group's full-history page, matching what choosing
+      // it from the dropdown would do.
+      if (scope === "all" && select.value !== "") {
+        navigateForAllScope(select.value);
+      }
+    });
+
+    relabelOptions();
+  }
+
+  function navigateForAllScope(value) {
+    window.location.href = value
+      ? select.dataset.scopeRoot + value + "/"
+      : select.dataset.scopeAllBrowseUrl;
+  }
+
   function applyFilter() {
     var value = select.value;
     var visibleCount = 0;
@@ -641,6 +699,10 @@ function initStakeholderFilter() {
   applyFilter();
 
   select.addEventListener("change", function () {
+    if (scope === "all") {
+      navigateForAllScope(select.value);
+      return;
+    }
     pushUrlForValue(select.value);
     applyFilter();
   });

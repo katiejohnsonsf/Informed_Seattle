@@ -2143,6 +2143,37 @@ h4.action-type {
 
 /* ── "View By Who is Impacted" stakeholder filter ─────────────────────── */
 
+.stakeholder-scope-toggle {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0 0 0.6rem;
+}
+
+.scope-toggle-btn {
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35em 0.85em;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.scope-toggle-btn:hover {
+  border-color: #a855f7;
+  color: #581c87;
+}
+
+.scope-toggle-btn-active,
+.scope-toggle-btn-active:hover {
+  background: #581c87;
+  border-color: #581c87;
+  color: #fff;
+}
+
 .stakeholder-filter-bar {
   display: flex;
   align-items: center;
